@@ -10,6 +10,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
+useHead({
+  htmlAttrs: {
+    'data-theme': 'dark'
+  }
+})
+
 const { loading } = storeToRefs(useAppStore())
 
 onMounted(async () => {
