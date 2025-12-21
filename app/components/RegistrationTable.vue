@@ -1,103 +1,106 @@
 <template>
   <div class="overflow-x-auto bg-black rounded-none shadow-sm">
-    <table class="table">
-      <!-- head -->
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Package Type</th>
-          <th>Contact</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- row 1 -->
-        <tr>
-          <th>1</th>
-          <td>Cy Ganderton</td>
-          <td>Premium</td>
-          <td>0123456789</td>
-        </tr>
-        <!-- row 2 -->
-        <tr>
-          <th>2</th>
-          <td>Hart Hagerty</td>
-          <td>Standard</td>
-          <td>0123456789</td>
-        </tr>
-        <!-- row 3 -->
-        <tr>
-          <th>3</th>
-          <td>Brice Swyre</td>
-          <td>VIP</td>
-          <td>0123456789</td>
-        </tr>
-      </tbody>
-    </table>
+    <section class="">
+      <table class="table">
+        <!-- head -->
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Unique Reference</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Package Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="registration.showModal()"
+            class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer" @click="curr_reg = reg"
+            v-for="(reg, i) in recent_reg" :key="i">
+            <th class="text-white/20">{{ i + 1 }}</th>
+            <td>{{ reg.firstName }} {{ reg.lastName }}</td>
+            <td>{{ reg.uniqueID }}</td>
+            <td>{{ reg.phone }}</td>
+            <td>{{ reg.email }}</td>
+            <td>{{ reg.gender }}</td>
+            <td>{{ reg.package }}</td>
+          </tr>
+        </tbody>
+
+        <!-- Modal display -->
+      </table>
+
+      <dialog id="registration" class="modal">
+        <div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
+          <h3 class="text-lg font-bold flex justify-between">{{ curr_reg!.firstName }} {{
+            curr_reg!.lastName }} <span class="text-amber-400">{{ curr_reg!.uniqueID }}</span></h3>
+          <p class="py-4 flex flex-col">
+            <span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
+                }}</span></span>
+            <span class="font-bold">WhatsApp: <span class="font-normal pl-3">{{ curr_reg!.whatsapp
+                }}</span></span>
+            <span class="font-bold">Email: <span class="font-normal pl-3">{{ curr_reg!.email
+                }}</span></span>
+            <span class="font-bold">Gender: <span class="font-normal pl-3">{{ curr_reg!.gender
+                }}</span></span>
+            <span class="font-bold">Package: <span class="font-normal pl-3">{{ curr_reg!.package
+                }}</span></span>
+            <span class="font-bold">Room Type: <span class="font-normal pl-3">{{ curr_reg!.roomType
+                }}</span></span>
+            <span class="font-bold">Has Visa: <span class="font-normal pl-3">{{ curr_reg!.hasVisa
+                }}</span></span>
+            <span class="font-bold">Visa Country: <span class="font-normal pl-3">{{
+              curr_reg!.visaCountry
+                }}</span></span>
+            <span class="font-bold">Visa Assist: <span class="font-normal pl-3">{{
+              curr_reg!.visaAssist
+                }}</span></span>
+            <span class="font-bold">Address: <span class="font-normal pl-3">{{ curr_reg!.addr
+                }}</span></span>
+            <span class="font-bold">Passport Number: <span class="font-normal pl-3">{{
+              curr_reg!.passNo
+                }}</span></span>
+            <span class="font-bold">Passport Expiry: <span class="font-normal pl-3">{{
+              curr_reg!.passExp
+                }}</span></span>
+            <span class="font-bold">Registered Date: <span class="font-normal pl-3">{{
+              new Date(curr_reg!.created_at).toLocaleDateString('en-GB')
+                }}</span></span>
+          </p>
+        </div>
+        <form method="dialog"
+          class="modal-backdrop border-outline bg-black/25 backdrop-blur-lg outline outline-amber-400">
+          <button>close</button>
+        </form>
+      </dialog>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-interface Registration {
-  id: number;
-  name: string;
-  email: string;
-  avatar: string;
-  destination: string;
-  package: string;
-  date: string;
-  status: 'Confirmed' | 'Pending' | 'Cancelled';
-}
+import { storeToRefs } from 'pinia'
+import type { Registration } from '~/interfaces/index'
 
-const registrations: Registration[] = [
-  {
-    id: 1,
-    name: 'Hart Hagerty',
-    email: 'hart@example.com',
-    avatar: 'https://img.daisyui.com/images/profile/demo/2@94.webp',
-    destination: 'Santorini, Greece',
-    package: 'Luxury Getaway',
-    date: 'Jan 15, 2026',
-    status: 'Confirmed',
-  },
-  {
-    id: 2,
-    name: 'Brice Swyre',
-    email: 'brice@example.com',
-    avatar: 'https://img.daisyui.com/images/profile/demo/3@94.webp',
-    destination: 'Kyoto, Japan',
-    package: 'Cultural Tour',
-    date: 'Feb 10, 2026',
-    status: 'Pending',
-  },
-  {
-    id: 3,
-    name: 'Marjy Ferencz',
-    email: 'marjy@example.com',
-    avatar: 'https://img.daisyui.com/images/profile/demo/4@94.webp',
-    destination: 'Paris, France',
-    package: 'Romance Special',
-    date: 'Mar 05, 2026',
-    status: 'Confirmed',
-  },
-  {
-    id: 4,
-    name: 'Yancy Tear',
-    email: 'yancy@example.com',
-    avatar: 'https://img.daisyui.com/images/profile/demo/5@94.webp',
-    destination: 'Bali, Indonesia',
-    package: 'Adventure Time',
-    date: 'Apr 01, 2026',
-    status: 'Cancelled',
-  },
-];
-
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case 'Confirmed': return 'badge-success text-white';
-    case 'Pending': return 'badge-warning text-white';
-    case 'Cancelled': return 'badge-error text-white';
-    default: return 'badge-ghost';
-  }
-}
+const { registrations, messages } = storeToRefs(useAppStore())
+const recent_reg = computed(() => registrations.value.slice(0, 3))
+const curr_reg = ref<Registration | null>({
+  addr: '',
+  dob: '',
+  email: '',
+  firstName: '',
+  gender: '',
+  hasVisa: false,
+  lastName: '',
+  package: '',
+  phone: '',
+  roomType: '',
+  uniqueID: '',
+  visaAssist: '',
+  visaCountry: '',
+  created_at: new Date(),
+  whatsapp: '',
+  passExp: '',
+  passNo: ''
+})
 </script>

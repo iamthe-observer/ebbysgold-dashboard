@@ -2,7 +2,7 @@
    <div class="space-y-6">
       <!-- Stats Row -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <StatsCard title="Total Registrations" value="679">
+         <StatsCard title="Total Registrations" :value="registrations.length.toString()">
             <template #icon>
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                   class="inline-block w-8 h-8 stroke-amber-400">
@@ -12,7 +12,7 @@
             </template>
          </StatsCard>
 
-         <StatsCard title="Registrations Today" value="4">
+         <StatsCard title="Registrations Today" :value="registrations_today.length.toString()">
             <template #icon>
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                   class="inline-block w-8 h-8 stroke-amber-400">
@@ -23,7 +23,7 @@
             </template>
          </StatsCard>
 
-         <StatsCard title="Quick Enquiries" value="5">
+         <StatsCard title="Quick Messages" :value="messages.length.toString()">
             <template #icon>
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                   class="inline-block w-8 h-8 stroke-amber-400">
@@ -45,8 +45,24 @@
       <div class="card bg-black rounded-none shadow-xl">
          <div class="card-body">
             <h2 class="card-title mb-4">Recent Messages</h2>
-            <RegistrationTable />
+            <MessagesTable />
          </div>
       </div>
    </div>
 </template>
+
+<script lang="ts" setup>
+import { storeToRefs } from 'pinia'
+import type { Registration } from '~/interfaces/index'
+
+const { registrations, messages } = storeToRefs(useAppStore())
+
+const registrations_today = computed(() => {
+   const today = new Date()
+   return registrations.value.filter((reg: Registration) => {
+      const regDate = new Date(reg.created_at)
+      return regDate.getDate() == today.getDate() && regDate.getMonth() == today.getMonth() && regDate.getFullYear() == today.getFullYear()
+   })
+})
+
+</script>

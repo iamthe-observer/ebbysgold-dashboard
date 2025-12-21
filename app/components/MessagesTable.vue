@@ -1,103 +1,58 @@
 <template>
 	<div class="overflow-x-auto bg-black rounded-none shadow-sm">
-		<table class="table">
-			<!-- head -->
-			<thead>
-				<tr>
-					<th>#</th>
-					<th>Name</th>
-					<th>Package Type</th>
-					<th>Contact</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- row 1 -->
-				<tr>
-					<th>1</th>
-					<td>Cy Ganderton</td>
-					<td>Premium</td>
-					<td>0123456789</td>
-				</tr>
-				<!-- row 2 -->
-				<tr>
-					<th>2</th>
-					<td>Hart Hagerty</td>
-					<td>Standard</td>
-					<td>0123456789</td>
-				</tr>
-				<!-- row 3 -->
-				<tr>
-					<th>3</th>
-					<td>Brice Swyre</td>
-					<td>VIP</td>
-					<td>0123456789</td>
-				</tr>
-			</tbody>
-		</table>
+		<section class="">
+			<table class="table">
+				<!-- head -->
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Name</th>
+						<th>Email</th>
+						<th>Message</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr onclick="message.showModal()"
+						class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
+						@click="curr_msg = reg" v-for="(reg, i) in recent_msg" :key="i">
+						<th class="text-white/20">{{ i + 1 }}</th>
+						<td>{{ reg.fullName }}</td>
+						<td>{{ reg.email }}</td>
+						<td class="truncate">{{ reg.message }}</td>
+					</tr>
+				</tbody>
+
+				<!-- Modal display -->
+			</table>
+
+			<dialog id="message" class="modal">
+				<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
+					<h3 class="text-lg font-bold flex justify-between">{{ curr_msg!.fullName }}</h3>
+					<p class="py-4 flex flex-col">
+						<span class="font-bold">Email: <span class="font-normal pl-3">{{ curr_msg!.email
+						}}</span></span>
+						<span class="font-bold">Message: <span class="font-normal pl-3">{{ curr_msg!.message
+						}}</span></span>
+					</p>
+				</div>
+				<form method="dialog"
+					class="modal-backdrop border-outline bg-black/25 backdrop-blur-lg outline outline-amber-400">
+					<button>close</button>
+				</form>
+			</dialog>
+		</section>
 	</div>
 </template>
 
 <script setup lang="ts">
-interface Registration {
-	id: number;
-	name: string;
-	email: string;
-	avatar: string;
-	destination: string;
-	package: string;
-	date: string;
-	status: 'Confirmed' | 'Pending' | 'Cancelled';
-}
+import { storeToRefs } from 'pinia'
+import type { Message } from '~/interfaces/index'
 
-const registrations: Registration[] = [
-	{
-		id: 1,
-		name: 'Hart Hagerty',
-		email: 'hart@example.com',
-		avatar: 'https://img.daisyui.com/images/profile/demo/2@94.webp',
-		destination: 'Santorini, Greece',
-		package: 'Luxury Getaway',
-		date: 'Jan 15, 2026',
-		status: 'Confirmed',
-	},
-	{
-		id: 2,
-		name: 'Brice Swyre',
-		email: 'brice@example.com',
-		avatar: 'https://img.daisyui.com/images/profile/demo/3@94.webp',
-		destination: 'Kyoto, Japan',
-		package: 'Cultural Tour',
-		date: 'Feb 10, 2026',
-		status: 'Pending',
-	},
-	{
-		id: 3,
-		name: 'Marjy Ferencz',
-		email: 'marjy@example.com',
-		avatar: 'https://img.daisyui.com/images/profile/demo/4@94.webp',
-		destination: 'Paris, France',
-		package: 'Romance Special',
-		date: 'Mar 05, 2026',
-		status: 'Confirmed',
-	},
-	{
-		id: 4,
-		name: 'Yancy Tear',
-		email: 'yancy@example.com',
-		avatar: 'https://img.daisyui.com/images/profile/demo/5@94.webp',
-		destination: 'Bali, Indonesia',
-		package: 'Adventure Time',
-		date: 'Apr 01, 2026',
-		status: 'Cancelled',
-	},
-];
-
-const getStatusClass = (status: string) => {
-	switch (status) {
-		case 'Confirmed': return 'badge-success text-white';
-		case 'Pending': return 'badge-warning text-white';
-		case 'Cancelled': return 'badge-error text-white';
-		default: return 'badge-ghost';
-	}
-}
+const { messages } = storeToRefs(useAppStore())
+const recent_msg = computed(() => messages.value.slice(0, 3))
+const curr_msg = ref<Message | null>({
+	fullName: '',
+	email: '',
+	message: ''
+})
 </script>

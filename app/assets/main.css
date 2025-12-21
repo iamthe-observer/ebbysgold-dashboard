@@ -1,2 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 @import 'tailwindcss';
 @plugin "daisyui";
+
+@theme {
+  --font-display: 'josefin sans', 'sans-serif';
+}
+
+* {
+  @apply font-display;
+}
+
+body {
+  overflow-x: hidden;
+}

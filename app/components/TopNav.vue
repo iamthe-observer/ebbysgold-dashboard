@@ -13,9 +13,9 @@
       <h2 class="text-xl font-semibold hidden uppercase lg:block px-4">Dashboard</h2>
     </div>
     <div class="flex pr-8 gap-2">
-      <div class="form-control hidden sm:block">
+      <!-- <div class="form-control hidden sm:block">
         <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto rounded-none bg-neutral" />
-      </div>
+      </div> -->
       <button class="btn btn-ghost btn-circle">
         <div class="indicator">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -31,14 +31,8 @@
             <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User Avatar" />
           </div>
         </label>
-        <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-          <li>
-            <a class="justify-between">
-              Profile
-              <span class="badge">New</span>
-            </a>
-          </li>
-          <li><a>Settings</a></li>
+        <ul tabindex="0"
+          class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-black outline outline-amber-400 rounded-none w-52">
           <li><a>Logout</a></li>
         </ul>
       </div>
