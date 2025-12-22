@@ -22,6 +22,7 @@ onMounted(async () => {
   useAppStore().$patch({ loading: true })
   await useAppStore().getRegistrations()
   await useAppStore().getMessages()
+  await useAppStore().getAppointments()
   useAppStore().$patch({ loading: false })
 })
 </script>

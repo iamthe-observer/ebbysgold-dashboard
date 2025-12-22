@@ -28,7 +28,14 @@
       <div class="dropdown dropdown-end">
         <label tabindex="0" class="btn btn-ghost btn-circle avatar">
           <div class="w-10 rounded-none">
-            <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User Avatar" />
+            <!-- <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User Avatar" /> -->
+
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+              viewBox="0 0 24 24"><!-- Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
+              <path fill="white"
+                d="M18 22q-1.825-.45-2.912-2T14 16.55V14l4-2l4 2v2.55q0 1.9-1.088 3.45T18 22M4 20v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13v3.55q0 .9.188 1.775T12.775 20zm8-8q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12" />
+            </svg>
+
           </div>
         </label>
         <ul tabindex="0"

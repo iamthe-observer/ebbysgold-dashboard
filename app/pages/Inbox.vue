@@ -1,6 +1,7 @@
 <template>
 	<main clas="flex flex-col gap-2 w-full h-full">
 		<div class="tabs tabs-box bg-neutral rounded-none">
+
 			<input type="radio" name="my_tabs_6" class="tab rounded-none"
 				:aria-label="`REGISTRATIONS ${registrations.length == 0 ? '' : registrations.length}`"
 				:checked="checked" />
@@ -25,7 +26,7 @@
 								@click="curr_reg = reg" v-for="(reg, i) in registrations" :key="i">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ reg.firstName }} {{ reg.lastName }}</td>
-								<td>{{ reg.uniqueID }}</td>
+								<td class="text-amber-100 font-bold text-xl">{{ reg.uniqueID }}</td>
 								<td>{{ reg.phone }}</td>
 								<td>{{ reg.email }}</td>
 								<td>{{ reg.gender }}</td>
@@ -38,9 +39,20 @@
 
 					<dialog id="registration" class="modal">
 						<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
-							<h3 class="text-lg font-bold flex justify-between">{{ curr_reg!.firstName }} {{
-								curr_reg!.lastName }} <span class="text-amber-400">{{ curr_reg!.uniqueID }}</span></h3>
+							<form method="dialog">
+								<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+							</form>
+
+
+							<h3 class="text-lg font-bold flex justify-start gap-5 items-center">{{ curr_reg!.firstName
+							}} {{
+									curr_reg!.lastName }} <span class="text-black px-2 py-1 bg-amber-400">{{
+									curr_reg!.uniqueID
+								}}</span>
+							</h3>
 							<p class="py-4 flex flex-col">
+								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
+								}}</span></span>
 								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
 								}}</span></span>
 								<span class="font-bold">WhatsApp: <span class="font-normal pl-3">{{ curr_reg!.whatsapp
@@ -74,15 +86,12 @@
 								}}</span></span>
 							</p>
 						</div>
-						<form method="dialog"
-							class="modal-backdrop border-outline bg-black/25 backdrop-blur-lg outline outline-amber-400">
-							<button>close</button>
-						</form>
 					</dialog>
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="tab rounded-none" aria-label="MESSAGES" />
+			<input type="radio" name="my_tabs_6" class="tab rounded-none"
+				:aria-label="`MESSAGES ${messages.length == 0 ? '' : messages.length}`" />
 			<div class="tab-content rounded-none bg-black border-base-300 p-6">
 				<section class="">
 					<table class="table">
@@ -101,16 +110,19 @@
 								<th class="text-white/20">{{ i }}</th>
 								<td>{{ msg.fullName }}</td>
 								<td>{{ msg.email }}</td>
-								<td>{{ msg.message }}</td>
+								<td class="truncate h-8 w-40 line-clamp-1">{{ msg.message }}</td>
 							</tr>
 						</tbody>
 					</table>
 
-					<dialog id="message1" class="modal">
+					<dialog id="message1" class="modal z-[100]">
 						<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
+							<form method="dialog">
+								<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+							</form>
 							<h3 class="text-lg font-bold flex justify-between">{{ curr_msg!.fullName }}</h3>
 							<p class="py-4 flex flex-col">
-								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_msg!.email
+								<span class="font-bold">Email: <span class="font-normal pl-3">{{ curr_msg!.email
 								}}</span></span>
 								<span class="font-bold">Message: <span class="font-normal pl-3">{{ curr_msg!.message
 								}}</span></span>
@@ -120,7 +132,8 @@
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="tab rounded-none" aria-label="APPOINTMENTS" />
+			<input type="radio" name="my_tabs_6" class="tab rounded-none"
+				:aria-label="`APPOINTMENTS ${appointments.length == 0 ? '' : appointments.length}`" />
 			<div class="tab-content rounded-none bg-black border-base-300 p-6">
 				<section class="">
 					<table class="table">
@@ -128,18 +141,21 @@
 						<thead>
 							<tr>
 								<th>#</th>
+								<th>Created At</th>
 								<th>Name</th>
-								<th>Package Type</th>
-								<th>Contact</th>
+								<th>Phone</th>
+								<th>Email</th>
+								<th>Appointment Date</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
-								v-for="i in 8">
-								<th>{{ i }}</th>
-								<td>Brice Swyre</td>
-								<td>VIP</td>
-								<td>0123456789</td>
+							<tr class="" v-for="(	app, i) in appointments">
+								<th class="text-white/20">{{ i }}</th>
+								<td>{{ app.fullName }}</td>
+								<td>{{ formatDateTime(app.created_at) }}</td>
+								<td>{{ app.phone }}</td>
+								<td>{{ app.email }}</td>
+								<td>{{ formatDateTime(app.date) }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -155,7 +171,19 @@
 import { storeToRefs } from 'pinia'
 import type { Registration, Message } from '~/interfaces/index'
 
-const { registrations, messages } = storeToRefs(useAppStore())
+
+function formatDateTime(date: string) {
+	let newDate = new Date(date)
+	const day = String(newDate.getDate()).padStart(2, '0');
+	const month = String(newDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+	const year = newDate.getFullYear();
+	const hours = String(newDate.getHours()).padStart(2, '0');
+	const minutes = String(newDate.getMinutes()).padStart(2, '0');
+
+	return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+const { registrations, messages, appointments } = storeToRefs(useAppStore())
 const checked = ref(true)
 const curr_reg = ref<Registration | null>({
 	addr: '',

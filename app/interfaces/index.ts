@@ -23,3 +23,11 @@ export type Message = {
   email: string
   message: string
 }
+
+export type Appointment = {
+  fullName: string
+  phone: string
+  email: string
+  date: string
+  created_at: string
+}
