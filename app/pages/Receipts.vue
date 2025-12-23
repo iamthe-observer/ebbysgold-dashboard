@@ -18,7 +18,8 @@
 						<h2 class="text-2xl font-bold">New Receipt</h2>
 					</div>
 					<div class="flex gap-2">
-						<button @click="saveAndPrint" class="btn btn-primary btn-sm gap-2 rounded-none">
+						<button @click="saveAndPrint"
+							class="btn bg-amber-400 hover:bg-amber-500 text-black btn-sm gap-2 rounded-none">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
 								stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -71,7 +72,7 @@
 					<div class="card bg-neutral shadow-sm p-4 rounded-none">
 						<div class="flex justify-between items-center mb-3">
 							<h3 class="font-semibold text-sm uppercase tracking-wider opacity-70">Items</h3>
-							<button @click="addItem" class="btn btn-ghost btn-xs text-primary rounded-none">+ Add
+							<button @click="addItem" class="btn btn-ghost btn-xs text-amber-400  rounded-none">+ Add
 								Item</button>
 						</div>
 						<div class="space-y-3">
@@ -218,13 +219,13 @@
 					</div>
 
 					<!-- Signatures -->
-					<div class="grid grid-cols-2 gap-12 mb-8 mt-auto">
-						<div>
+					<div class="flex justify-end w-full gap-12 mb-8 mt-auto">
+						<!-- <div>
 							<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
 							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
 							</div>
-						</div>
-						<div>
+						</div> -->
+						<div class="w-1/2">
 							<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
 								<!-- Optional Placeholder for Stamp area -->
 							</div>
@@ -248,7 +249,9 @@
 			<div class="container mx-auto max-w-5xl">
 				<div class="flex justify-between items-center mb-6">
 					<h2 class="text-2xl font-bold">Saved Receipts</h2>
-					<button @click="createNew" class="btn btn-primary btn-sm rounded-none">+ Create New</button>
+					<button @click="createNew"
+						class="btn bg-amber-400 text-black hover:bg-amber-500 btn-sm rounded-none">+ Create
+						New</button>
 				</div>
 
 				<div v-if="savedReceipts.length === 0"
@@ -281,7 +284,7 @@
 										}}
 									</p>
 									<div class="flex justify-between items-center mt-4">
-										<span class="font-bold text-lg text-primary">{{
+										<span class="font-bold text-lg text-amber-400">{{
 											formatCurrency(calculateTotal(saved))
 										}}</span>
 									</div>
@@ -428,13 +431,13 @@
 						</div>
 
 						<!-- Signatures -->
-						<div class="grid grid-cols-2 gap-12 mb-8 mt-auto">
-							<div>
+						<div class="flex justify-end gap-12 mb-8 mt-auto">
+							<!-- <div>
 								<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
 								<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
 								</div>
-							</div>
-							<div>
+							</div> -->
+							<div class="w-1/2">
 								<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
 									<!-- Optional Placeholder for Stamp area -->
 								</div>
