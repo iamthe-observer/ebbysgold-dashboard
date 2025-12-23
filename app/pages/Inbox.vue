@@ -142,8 +142,8 @@
 						<thead>
 							<tr>
 								<th>#</th>
-								<th>Created At</th>
 								<th>Name</th>
+								<th>Created At</th>
 								<th>Phone</th>
 								<th>Email</th>
 								<th>Appointment Date</th>
@@ -151,7 +151,7 @@
 						</thead>
 						<tbody>
 							<tr class="" v-for="(	app, i) in appointments">
-								<th class="text-white/20">{{ i }}</th>
+								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ app.fullName }}</td>
 								<td>{{ formatDateTime(app.created_at) }}</td>
 								<td>{{ app.phone }}</td>
