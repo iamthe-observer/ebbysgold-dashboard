@@ -25,11 +25,13 @@ export type Message = {
 }
 
 export type Appointment = {
+  id?: string
   fullName: string
   phone: string
   email: string
   date: string
   created_at: string
+  status?: string
 }
 
 export interface CompanyData {

@@ -2,14 +2,22 @@
 	<main clas="flex flex-col gap-2 w-full h-full">
 		<div class="tabs tabs-box bg-neutral rounded-none">
 
-			<input type="radio" name="my_tabs_6" class="tab rounded-none"
+			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
 				:aria-label="`REGISTRATIONS ${registrations.length == 0 ? '' : registrations.length}`"
 				:checked="checked" />
-			<div class="tab-content bg-black rounded-none border-base-300 p-6">
+			<div class="tab-content bg-black rounded-none p-6">
 				<section class="">
 					<table class="table">
 						<!-- head -->
 						<thead>
+							<tr>
+								<th colspan="7">
+									<div class="p-2">
+										<input v-model="regSearch" type="text" placeholder="Search Registrations..."
+											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
+									</div>
+								</th>
+							</tr>
 							<tr>
 								<th>#</th>
 								<th>Name</th>
@@ -23,7 +31,7 @@
 						<tbody>
 							<tr onclick="registration.showModal()"
 								class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
-								@click="curr_reg = reg" v-for="(reg, i) in registrations" :key="i">
+								@click="curr_reg = reg" v-for="(reg, i) in filteredRegistrations" :key="i">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ reg.firstName }} {{ reg.lastName }}</td>
 								<td class="text-amber-100 font-bold text-xl">{{ reg.uniqueID }}</td>
@@ -91,13 +99,21 @@
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="tab rounded-none"
+			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
 				:aria-label="`MESSAGES ${messages.length == 0 ? '' : messages.length}`" />
-			<div class="tab-content rounded-none bg-black border-base-300 p-6">
+			<div class="tab-content rounded-none bg-black p-6">
 				<section class="">
 					<table class="table">
 						<!-- head -->
 						<thead>
+							<tr>
+								<th colspan="4">
+									<div class="p-2">
+										<input v-model="msgSearch" type="text" placeholder="Search Messages..."
+											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
+									</div>
+								</th>
+							</tr>
 							<tr>
 								<th>#</th>
 								<th>Name</th>
@@ -107,7 +123,8 @@
 						</thead>
 						<tbody>
 							<tr class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
-								v-for="(msg, i) in messages" onclick="message1.showModal()" @click="curr_msg = msg">
+								v-for="(msg, i) in filteredMessages" onclick="message1.showModal()"
+								@click="curr_msg = msg">
 								<th class="text-white/20">{{ i }}</th>
 								<td>{{ msg.fullName }}</td>
 								<td>{{ msg.email }}</td>
@@ -133,13 +150,30 @@
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="tab rounded-none"
+			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
 				:aria-label="`APPOINTMENTS ${appointments.length == 0 ? '' : appointments.length}`" />
-			<div class="tab-content rounded-none bg-black border-base-300 p-6">
+			<div class="tab-content rounded-none bg-black p-6">
 				<section class="">
 					<table class="table">
 						<!-- head -->
 						<thead>
+							<tr>
+								<th colspan="7">
+									<div class="flex gap-4 p-2 items-center">
+										<input v-model="appSearch" type="text" placeholder="Search Appointments..."
+											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
+										<select v-model="appStatusFilter"
+											class="select bg-neutral select-bordered select-sm rounded-none">
+											<option value="">All Statuses</option>
+											<option value="pending">Pending</option>
+											<option value="attended">Attended</option>
+											<option value="accepted">Accepted</option>
+											<option value="cancelled">Cancelled</option>
+											<option value="denied">Denied</option>
+										</select>
+									</div>
+								</th>
+							</tr>
 							<tr>
 								<th>#</th>
 								<th>Name</th>
@@ -147,16 +181,32 @@
 								<th>Phone</th>
 								<th>Email</th>
 								<th>Appointment Date</th>
+								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr class="" v-for="(	app, i) in appointments">
+							<tr class="" v-for="(app, i) in filteredAppointments" :key="i">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ app.fullName }}</td>
 								<td>{{ formatDateTime(app.created_at) }}</td>
 								<td>{{ app.phone }}</td>
 								<td>{{ app.email }}</td>
 								<td>{{ formatDateTime(app.date) }}</td>
+								<td>
+									<select :value="app.status || 'pending'"
+										@change="updateAppointmentStatus(app.id!, ($event.target as HTMLSelectElement).value)"
+										class="select select-ghost select-xs rounded-none" :class="{
+											'text-warning': !app.status || app.status === 'pending',
+											'text-success': app.status === 'attended' || app.status === 'accepted',
+											'text-error': app.status === 'cancelled' || app.status === 'denied'
+										}">
+										<option value="pending">Pending</option>
+										<option value="attended">Attended</option>
+										<option value="accepted">Accepted</option>
+										<option value="cancelled">Cancelled</option>
+										<option value="denied">Denied</option>
+									</select>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -188,7 +238,71 @@ function formatDateTime(date: string) {
 }
 
 const { registrations, messages, appointments } = storeToRefs(useAppStore())
+const { $supabase } = useNuxtApp()
 const checked = ref(true)
+
+// Search and Filter States
+const regSearch = ref('')
+const msgSearch = ref('')
+const appSearch = ref('')
+const appStatusFilter = ref('')
+
+const filteredRegistrations = computed(() => {
+	if (!regSearch.value) return registrations.value
+	const s = regSearch.value.toLowerCase()
+	return registrations.value.filter(r =>
+		r.firstName.toLowerCase().includes(s) ||
+		r.lastName.toLowerCase().includes(s) ||
+		r.email.toLowerCase().includes(s) ||
+		r.uniqueID.toLowerCase().includes(s) ||
+		r.phone.includes(s)
+	)
+})
+
+const filteredMessages = computed(() => {
+	if (!msgSearch.value) return messages.value
+	const s = msgSearch.value.toLowerCase()
+	return messages.value.filter(m =>
+		m.fullName.toLowerCase().includes(s) ||
+		m.email.toLowerCase().includes(s) ||
+		m.message.toLowerCase().includes(s)
+	)
+})
+
+const filteredAppointments = computed(() => {
+	let list = appointments.value
+
+	if (appStatusFilter.value) {
+		list = list.filter(a => (a.status || 'pending') === appStatusFilter.value)
+	}
+
+	if (!appSearch.value) return list
+	const s = appSearch.value.toLowerCase()
+	return list.filter(a =>
+		a.fullName.toLowerCase().includes(s) ||
+		a.email.toLowerCase().includes(s) ||
+		a.phone.includes(s)
+	)
+})
+
+const updateAppointmentStatus = async (id: string, status: string) => {
+	try {
+		const { error } = await $supabase
+			.from('appointment-egtravels')
+			.update({ status })
+			.eq('id', id)
+
+		if (error) throw error
+
+		// Optimistically update local state or re-fetch
+		const app = appointments.value.find(a => a.id === id)
+		if (app) app.status = status
+
+	} catch (error) {
+		console.error('Error updating status:', error)
+		alert('Failed to update status. Please try again.')
+	}
+}
 const curr_reg = ref<Registration | null>({
 	addr: '',
 	dob: '',

@@ -248,10 +248,17 @@
 		<div v-show="activeTab === 'view'" class="flex-grow p-8 overflow-y-auto">
 			<div class="container mx-auto max-w-5xl">
 				<div class="flex justify-between items-center mb-6">
-					<h2 class="text-2xl font-bold">Saved Receipts</h2>
+					<h2 class="text-2xl font-bold">Saved Receipts [ <span class="text-amber-400">{{ savedReceipts.length
+					}}</span> ]</h2>
 					<button @click="createNew"
 						class="btn bg-amber-400 text-black hover:bg-amber-500 btn-sm rounded-none">+ Create
 						New</button>
+				</div>
+
+				<div class="mb-6" v-if="savedReceipts.length > 0">
+					<input v-model="receiptSearch" type="text"
+						placeholder="Search saved receipts by number or customer name..."
+						class="input input-bordered w-full max-w-md rounded-none bg-neutral/20 border-white/10" />
 				</div>
 
 				<div v-if="savedReceipts.length === 0"
@@ -265,7 +272,7 @@
 					<!-- <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
 
 					<!-- <div class="hover-3d" v-for="(saved, index) in savedReceipts" :key="index"> -->
-					<div class="hover-3d cursor-pointer" v-for="(saved, index) in savedReceipts" :key="index"
+					<div class="hover-3d cursor-pointer" v-for="(saved, index) in filteredSavedReceipts" :key="index"
 						@click="openReceiptModal(saved)">
 						<!-- content -->
 						<figure class="max-w-100 rounded-none">
@@ -524,6 +531,17 @@ const formatDateForInput = (date: Date) => {
 const activeTab = ref('view');
 const savedReceipts = ref<any[]>([]);
 const selectedReceipt = ref<any>(null);
+const receiptSearch = ref('');
+
+const filteredSavedReceipts = computed(() => {
+	if (!receiptSearch.value) return savedReceipts.value;
+	const s = receiptSearch.value.toLowerCase();
+	return savedReceipts.value.filter(r =>
+		(r.number && r.number.toLowerCase().includes(s)) ||
+		(r.customerName && r.customerName.toLowerCase().includes(s)) ||
+		(r.date && new Date(r.date).toLocaleDateString().includes(s))
+	);
+});
 
 const openReceiptModal = (receiptData: any) => {
 	selectedReceipt.value = receiptData;
@@ -531,6 +549,11 @@ const openReceiptModal = (receiptData: any) => {
 	const modal = document.getElementById('receipt_modal') as HTMLDialogElement;
 	if (modal) {
 		modal.showModal();
+		// Smooth scroll modal content to top
+		const scrollArea = modal.querySelector('.overflow-y-auto');
+		if (scrollArea) {
+			scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+		}
 	}
 };
 
@@ -560,10 +583,11 @@ const printSelectedReceipt = () => {
 	if (selectedReceipt.value) {
 		// Load into the active receipt state for printing
 		Object.assign(receipt, JSON.parse(JSON.stringify(selectedReceipt.value)));
+		activeTab.value = 'create'; // Ensure printable area is rendered
 		closeReceiptModal(); // Close modal to allow print view to take over if needed, or just print
 		setTimeout(() => {
 			window.print();
-		}, 100);
+		}, 300);
 	}
 };
 

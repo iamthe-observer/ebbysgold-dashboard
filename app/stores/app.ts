@@ -3,7 +3,7 @@ import type { Registration, Message, Appointment } from '~/interfaces/index'
 
 export const useAppStore = defineStore('app', () => {
   const { $supabase } = useNuxtApp()
-  const loading = ref(false)
+  const loading = ref(true)
   const registrations = ref<Registration[]>([])
   const appointments = ref<Appointment[]>([])
   const messages = ref<Message[]>([])
