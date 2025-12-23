@@ -53,7 +53,8 @@
 							<p class="py-4 flex flex-col">
 								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
 								}}</span></span>
-								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
+								<span class="font-bold">Date of Birth: <span class="font-normal pl-3">{{
+									new Date(curr_reg!.dob).toLocaleDateString('en-GB')
 								}}</span></span>
 								<span class="font-bold">WhatsApp: <span class="font-normal pl-3">{{ curr_reg!.whatsapp
 								}}</span></span>
