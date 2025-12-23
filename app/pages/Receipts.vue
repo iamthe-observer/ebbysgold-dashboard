@@ -460,7 +460,7 @@
 				<div class="absolute bottom-8 right-8 z-[100] hidden-on-print">
 					<div class="dropdown dropdown-top dropdown-end">
 						<label tabindex="0"
-							class="btn btn-primary btn-circle btn-lg shadow-2xl hover:scale-110 transition-transform">
+							class="btn bg-amber-400 btn-square btn-lg shadow-2xl hover:scale-110 transition-transform">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-black" fill="none"
 								viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
