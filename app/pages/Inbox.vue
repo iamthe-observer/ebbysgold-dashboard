@@ -171,6 +171,9 @@
 import { storeToRefs } from 'pinia'
 import type { Registration, Message } from '~/interfaces/index'
 
+useHead({
+	title: 'Inbox | Ebbys Gold'
+})
 
 function formatDateTime(date: string) {
 	let newDate = new Date(date)

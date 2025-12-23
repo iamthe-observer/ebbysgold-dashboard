@@ -1,266 +1,598 @@
 <template>
-	<div class="flex flex-col lg:flex-row h-[calc(100vh-4rem)] bg-base-100">
-		<!-- Configuration Panel (Left Side) -->
-		<div class="w-full lg:w-1/3 bg-base-200 border-r border-base-300 overflow-y-auto p-6 hidden-on-print">
-			<div class="flex justify-between items-center mb-6">
-				<h2 class="text-2xl font-bold">Receipts</h2>
-				<button @click="printReceipt" class="btn btn-primary btn-sm gap-2">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-						stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-					</svg>
-					Print
-				</button>
+	<div class="flex flex-col h-[calc(100vh-4rem)] bg-black">
+
+
+		<!-- Create Receipt Tab -->
+		<div v-show="activeTab === 'create'" class="flex flex-col lg:flex-row flex-grow overflow-hidden relative">
+			<!-- Configuration Panel (Left Side) -->
+			<div class="w-full lg:w-1/3 bg-black border-r border-base-300 overflow-y-auto p-6 hidden-on-print">
+				<div class="flex justify-between items-center mb-6">
+					<div class="flex items-center gap-2">
+						<button @click="activeTab = 'view'" class="btn btn-ghost btn-sm btn-square rounded-none">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+								stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+							</svg>
+						</button>
+						<h2 class="text-2xl font-bold">New Receipt</h2>
+					</div>
+					<div class="flex gap-2">
+						<button @click="saveAndPrint" class="btn btn-primary btn-sm gap-2 rounded-none">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+								stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+							</svg>
+							Save & Print
+						</button>
+					</div>
+				</div>
+
+				<div class="space-y-6">
+					<!-- Company Info -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Company Details</h3>
+						<div class="space-y-1 text-sm text-gray-400">
+							<p class="font-bold text-white">{{ receipt.companyName }}</p>
+							<p>{{ receipt.companyAddress }}</p>
+							<p>{{ receipt.companyPhone }}</p>
+							<p>{{ receipt.companyEmail }}</p>
+						</div>
+					</div>
+
+					<!-- Receipt Meta -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Receipt Details</h3>
+						<div class="grid grid-cols-2 gap-3">
+							<div>
+								<label class="label label-text p-0 mb-1 text-xs">Date</label>
+								<input v-model="receipt.date" type="date"
+									class="input input-bordered input-sm w-full rounded-none" />
+							</div>
+							<div>
+								<label class="label label-text p-0 mb-1 text-xs">Receipt #</label>
+								<input v-model="receipt.number" type="text" readonly
+									class="input input-bordered input-sm w-full opacity-70 cursor-not-allowed rounded-none" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Customer Info -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Bill To</h3>
+						<div class="space-y-3">
+							<input v-model="receipt.customerName" type="text" placeholder="Customer Name"
+								class="input input-bordered input-sm w-full rounded-none" />
+						</div>
+					</div>
+
+					<!-- Line Items -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<div class="flex justify-between items-center mb-3">
+							<h3 class="font-semibold text-sm uppercase tracking-wider opacity-70">Items</h3>
+							<button @click="addItem" class="btn btn-ghost btn-xs text-primary rounded-none">+ Add
+								Item</button>
+						</div>
+						<div class="space-y-3">
+							<div v-for="(item, index) in receipt.items" :key="index"
+								class="flex gap-2 items-start group">
+								<div class="flex-grow space-y-2">
+									<input v-model="item.description" type="text" placeholder="Description"
+										class="input input-bordered input-xs w-full rounded-none" />
+								</div>
+								<div class="w-16">
+									<input v-model.number="item.qty" type="number" placeholder="Qty"
+										class="input input-bordered input-xs w-full text-center rounded-none" />
+								</div>
+								<div class="w-24">
+									<input v-model.number="item.price" type="number" placeholder="Price"
+										class="input input-bordered input-xs w-full text-right rounded-none" />
+								</div>
+								<button @click="removeItem(index)"
+									class="btn btn-ghost btn-xs text-error px-1 rounded-none">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+										viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Calculations -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Totals</h3>
+						<div class="space-y-2">
+							<div class="flex items-center justify-between">
+								<span class="text-sm">Tax Rate (%)</span>
+								<input v-model.number="receipt.taxRate" type="number"
+									class="input input-bordered input-xs w-20 text-right rounded-none" />
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-sm">Discount</span>
+								<input v-model.number="receipt.discount" type="number"
+									class="input input-bordered input-xs w-24 text-right rounded-none" />
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="h-20"></div> <!-- Spacer -->
 			</div>
 
-			<div class="space-y-6">
-				<!-- Company Info -->
-				<div class="card bg-base-100 shadow-sm p-4">
-					<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Company Details</h3>
-					<div class="space-y-3">
-						<input v-model="receipt.companyName" type="text" placeholder="Company Name"
-							class="input input-bordered input-sm w-full" />
-						<input v-model="receipt.companyAddress" type="text" placeholder="Address"
-							class="input input-bordered input-sm w-full" />
-						<div class="grid grid-cols-2 gap-2">
-							<input v-model="receipt.companyPhone" type="text" placeholder="Phone"
-								class="input input-bordered input-sm w-full" />
-							<input v-model="receipt.companyEmail" type="text" placeholder="Email"
-								class="input input-bordered input-sm w-full" />
-						</div>
-					</div>
-				</div>
+			<!-- Preview Panel (Right Side) -->
+			<div
+				class="w-full lg:w-2/3 bg-black p-8 overflow-y-auto flex justify-center items-start print-area-container">
+				<!-- Receipt Paper -->
+				<div id="printable-receipt"
+					class="bg-white text-black w-full max-w-[21cm] min-h-[29.7cm] shadow-2xl p-12 relative flex flex-col">
 
-				<!-- Receipt Meta -->
-				<div class="card bg-base-100 shadow-sm p-4">
-					<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Receipt Details</h3>
-					<div class="grid grid-cols-2 gap-3">
+					<!-- Header -->
+					<div class="flex justify-between items-start mb-12">
 						<div>
-							<label class="label label-text p-0 mb-1 text-xs">Date</label>
-							<input v-model="receipt.date" type="date" class="input input-bordered input-sm w-full" />
-						</div>
-						<div>
-							<label class="label label-text p-0 mb-1 text-xs">Receipt #</label>
-							<input v-model="receipt.number" type="text" class="input input-bordered input-sm w-full" />
-						</div>
-					</div>
-				</div>
-
-				<!-- Customer Info -->
-				<div class="card bg-base-100 shadow-sm p-4">
-					<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Bill To</h3>
-					<div class="space-y-3">
-						<input v-model="receipt.customerName" type="text" placeholder="Customer Name"
-							class="input input-bordered input-sm w-full" />
-						<input v-model="receipt.customerAddress" type="text" placeholder="Customer Address"
-							class="input input-bordered input-sm w-full" />
-						<input v-model="receipt.customerEmail" type="text" placeholder="Customer Email/Phone"
-							class="input input-bordered input-sm w-full" />
-					</div>
-				</div>
-
-				<!-- Line Items -->
-				<div class="card bg-base-100 shadow-sm p-4">
-					<div class="flex justify-between items-center mb-3">
-						<h3 class="font-semibold text-sm uppercase tracking-wider opacity-70">Items</h3>
-						<button @click="addItem" class="btn btn-ghost btn-xs text-primary">+ Add Item</button>
-					</div>
-					<div class="space-y-3">
-						<div v-for="(item, index) in receipt.items" :key="index" class="flex gap-2 items-start group">
-							<div class="flex-grow space-y-2">
-								<input v-model="item.description" type="text" placeholder="Description"
-									class="input input-bordered input-xs w-full" />
+							<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
+								<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
+									alt="Ebbysgold Logo" />
+							</h1>
+							<div class="text-slate-500 text-sm leading-relaxed">
+								<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
+								<p v-if="receipt.companyPhone || receipt.companyEmail">
+									{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ') }}
+								</p>
 							</div>
-							<div class="w-16">
-								<input v-model.number="item.qty" type="number" placeholder="Qty"
-									class="input input-bordered input-xs w-full text-center" />
-							</div>
-							<div class="w-24">
-								<input v-model.number="item.price" type="number" placeholder="Price"
-									class="input input-bordered input-xs w-full text-right" />
-							</div>
-							<!-- Delete button only visible on hover or if there are multiple items, but let's always show it for ease -->
-							<button @click="removeItem(index)" class="btn btn-ghost btn-xs text-error px-1">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-									stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M6 18L18 6M6 6l12 12" />
-								</svg>
-							</button>
 						</div>
-					</div>
-				</div>
-
-				<!-- Calculations -->
-				<div class="card bg-base-100 shadow-sm p-4">
-					<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Totals</h3>
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<span class="text-sm">Tax Rate (%)</span>
-							<input v-model.number="receipt.taxRate" type="number"
-								class="input input-bordered input-xs w-20 text-right" />
-						</div>
-						<div class="flex items-center justify-between">
-							<span class="text-sm">Discount</span>
-							<input v-model.number="receipt.discount" type="number"
-								class="input input-bordered input-xs w-24 text-right" />
-						</div>
-					</div>
-				</div>
-
-			</div>
-			<div class="h-20"></div> <!-- Spacer -->
-		</div>
-
-		<!-- Preview Panel (Right Side) -->
-		<div
-			class="w-full lg:w-2/3 bg-base-300 p-8 overflow-y-auto flex justify-center items-start print-area-container">
-
-			<!-- Receipt Paper -->
-			<div id="printable-receipt"
-				class="bg-white text-black w-full max-w-[21cm] min-h-[29.7cm] shadow-2xl p-12 relative flex flex-col">
-
-				<!-- Header -->
-				<div class="flex justify-between items-start mb-12">
-					<div>
-						<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
-							<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
-								alt="Ebbysgold Logo" />
-						</h1>
-						<div class="text-slate-500 text-sm leading-relaxed">
-							<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
-							<p v-if="receipt.companyPhone || receipt.companyEmail">
-								{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ') }}
-							</p>
-						</div>
-					</div>
-					<div class="text-right">
-						<div
-							class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
-							RECEIPT
-						</div>
-						<div class="relative z-10">
-							<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number</div>
-							<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number }}</div>
-
-							<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
-							<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Bill To -->
-				<div class="mb-12 border-b-2 border-slate-100 pb-8">
-					<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
-					<div class="text-lg font-bold text-slate-800 mb-1">{{ receipt.customerName || 'Guest Customer' }}
-					</div>
-					<div class="text-slate-600" v-if="receipt.customerAddress">{{ receipt.customerAddress }}</div>
-					<div class="text-slate-600" v-if="receipt.customerEmail">{{ receipt.customerEmail }}</div>
-				</div>
-
-				<!-- Items Table -->
-				<div class="flex-grow">
-					<table class="w-full mb-8">
-						<thead>
-							<tr class="border-b-2 border-slate-800">
-								<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">Description</th>
-								<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty</th>
-								<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Price</th>
-								<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Total</th>
-							</tr>
-						</thead>
-						<tbody class="text-slate-700">
-							<tr v-for="(item, i) in receipt.items" :key="i" class="border-b border-slate-100">
-								<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
-								<td class="py-4 text-center">{{ item.qty }}</td>
-								<td class="py-4 text-right">{{ formatCurrency(item.price) }}</td>
-								<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty *
-									item.price) }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-
-				<!-- Summaries -->
-				<div class="flex justify-end mb-16">
-					<div class="w-1/2 space-y-3">
-						<div class="flex justify-between text-slate-500">
-							<span>Subtotal</span>
-							<span>{{ formatCurrency(subtotal) }}</span>
-						</div>
-						<div class="flex justify-between text-slate-500" v-if="receipt.taxRate > 0">
-							<span>Tax ({{ receipt.taxRate }}%)</span>
-							<span>{{ formatCurrency(taxAmount) }}</span>
-						</div>
-						<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
-							<span>Discount</span>
-							<span class="text-red-500">- {{ formatCurrency(receipt.discount) }}</span>
-						</div>
-						<div
-							class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
-							<span>Total</span>
-							<span>{{ formatCurrency(total) }}</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Signatures -->
-				<div class="grid grid-cols-2 gap-12 mb-8 mt-auto">
-					<div>
-						<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
-						<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature</div>
-					</div>
-					<div>
-						<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
-							<!-- Optional Placeholder for Stamp area -->
+						<div class="text-right">
 							<div
-								class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-								<span
-									class="text-xs border-2 border-slate-400 p-2 rounded transform -rotate-12 uppercase tracking-widest">Stamp
-									Here</span>
+								class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
+								RECEIPT
+							</div>
+							<div class="relative z-10">
+								<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number</div>
+								<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number }}</div>
+
+								<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
+								<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
 							</div>
 						</div>
-						<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
-							Signature</div>
 					</div>
-				</div>
 
-				<!-- Footer -->
-				<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
-					<p>Thank you for your business!</p>
-					<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
-				</div>
+					<!-- Bill To -->
+					<div class="mb-12 border-b-2 border-slate-100 pb-8">
+						<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
+						<div class="text-lg font-bold text-slate-800 mb-1">{{ receipt.customerName || 'Guest Customer'
+						}}
+						</div>
+					</div>
 
+					<!-- Items Table -->
+					<div class="flex-grow">
+						<table class="w-full mb-8">
+							<thead>
+								<tr class="border-b-2 border-slate-800">
+									<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">Description
+									</th>
+									<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
+									</th>
+									<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Price
+									</th>
+									<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Total
+									</th>
+								</tr>
+							</thead>
+							<tbody class="text-slate-700">
+								<tr v-for="(item, i) in receipt.items" :key="i" class="border-b border-slate-100">
+									<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
+									<td class="py-4 text-center">{{ item.qty }}</td>
+									<td class="py-4 text-right">{{ formatCurrency(item.price) }}</td>
+									<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty *
+										item.price) }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Summaries -->
+					<div class="flex justify-end mb-16">
+						<div class="w-1/2 space-y-3">
+							<div class="flex justify-between text-slate-500">
+								<span>Subtotal</span>
+								<span>{{ formatCurrency(subtotal) }}</span>
+							</div>
+							<div class="flex justify-between text-slate-500"
+								v-if="receipt.taxRate && receipt.taxRate > 0">
+								<span>Tax ({{ receipt.taxRate }}%)</span>
+								<span>{{ formatCurrency(taxAmount) }}</span>
+							</div>
+							<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
+								<span>Discount</span>
+								<span class="text-red-500">- {{ formatCurrency(receipt.discount) }}</span>
+							</div>
+							<div
+								class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
+								<span>Total</span>
+								<span>{{ formatCurrency(total) }}</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Signatures -->
+					<div class="grid grid-cols-2 gap-12 mb-8 mt-auto">
+						<div>
+							<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
+							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
+							</div>
+						</div>
+						<div>
+							<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
+								<!-- Optional Placeholder for Stamp area -->
+							</div>
+							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
+								Signature</div>
+						</div>
+					</div>
+
+					<!-- Footer -->
+					<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+						<p>Thank you for your business!</p>
+						<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
+					</div>
+
+				</div>
 			</div>
 		</div>
+
+		<!-- View Receipts Tab -->
+		<div v-show="activeTab === 'view'" class="flex-grow p-8 overflow-y-auto">
+			<div class="container mx-auto max-w-5xl">
+				<div class="flex justify-between items-center mb-6">
+					<h2 class="text-2xl font-bold">Saved Receipts</h2>
+					<button @click="createNew" class="btn btn-primary btn-sm rounded-none">+ Create New</button>
+				</div>
+
+				<div v-if="savedReceipts.length === 0"
+					class="text-center text-gray-500 mt-10 p-10 bg-base-200 rounded-none">
+					<p class="text-lg">No saved receipts found</p>
+					<button @click="activeTab = 'create'" class="btn btn-link rounded-none">Create your first
+						receipt</button>
+				</div>
+
+				<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<!-- <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
+
+					<!-- <div class="hover-3d" v-for="(saved, index) in savedReceipts" :key="index"> -->
+					<div class="hover-3d cursor-pointer" v-for="(saved, index) in savedReceipts" :key="index"
+						@click="openReceiptModal(saved)">
+						<!-- content -->
+						<figure class="max-w-100 rounded-none">
+
+							<div class="card bg-[radial-gradient(circle_at_bottom_left,#ffffff04_35%,transparent_36%),radial-gradient(circle_at_top_right,#ffffff04_35%,transparent_36%)] bg-size-[4.95em_4.95em] shadow-lg hover:shadow-xl transition-shadow rounded-none relative overflow-hidden"
+								@mousemove="handleCardMouseMove($event)">
+								<div class="card-body p-5">
+									<div class="flex justify-between items-start mb-2">
+										<h3 class="card-title text-base">{{ saved.number }}</h3>
+										<div class="badge badge-outline rounded-none">{{ new
+											Date(saved.date).toLocaleDateString() }}</div>
+									</div>
+									<p class="text-sm text-gray-500 font-medium truncate">
+										{{
+											saved.customerName || 'No Name'
+										}}
+									</p>
+									<div class="flex justify-between items-center mt-4">
+										<span class="font-bold text-lg text-primary">{{
+											formatCurrency(calculateTotal(saved))
+										}}</span>
+									</div>
+								</div>
+							</div>
+
+						</figure>
+						<!-- 8 empty divs needed for the 3D effect -->
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Receipt Modal -->
+		<dialog id="receipt_modal" class="modal">
+			<div class="modal-box w-11/12 max-w-5xl bg-white text-black p-0 rounded-none overflow-hidden"
+				v-if="selectedReceipt">
+				<div class="overflow-y-auto max-h-[80vh] p-12"> <!-- Scrollable content area -->
+					<form method="dialog">
+						<button
+							class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-black z-50">✕</button>
+					</form>
+
+					<!-- Receipt Layout (Reuse) -->
+					<div class="w-full relative flex flex-col">
+
+						<!-- Header -->
+						<div class="flex justify-between items-start mb-12">
+							<div>
+								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
+									<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
+										alt="Ebbysgold Logo" />
+								</h1>
+								<div class="text-slate-500 text-sm leading-relaxed">
+									<p v-if="selectedReceipt.companyAddress">{{ selectedReceipt.companyAddress }}</p>
+									<p v-if="selectedReceipt.companyPhone || selectedReceipt.companyEmail">
+										{{ [selectedReceipt.companyPhone,
+										selectedReceipt.companyEmail].filter(Boolean).join(' • ')
+										}}
+									</p>
+								</div>
+							</div>
+							<div class="text-right">
+								<div
+									class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
+									RECEIPT
+								</div>
+								<div class="relative z-10">
+									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number
+									</div>
+									<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{
+										selectedReceipt.number }}</div>
+
+									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
+									<div class="text-lg font-medium text-slate-800">{{ new
+										Date(selectedReceipt.date).toLocaleDateString('en-US', {
+											year: 'numeric',
+											month: 'long',
+											day: 'numeric'
+										}) }}</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Bill To -->
+						<div class="mb-12 border-b-2 border-slate-100 pb-8">
+							<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
+							<div class="text-lg font-bold text-slate-800 mb-1">
+								{{
+									selectedReceipt.customerName || 'Guest Customer'
+								}}
+							</div>
+						</div>
+
+						<!-- Items Table -->
+						<div class="flex-grow">
+							<table class="w-full mb-8">
+								<thead>
+									<tr class="border-b-2 border-slate-800">
+										<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">
+											Description
+										</th>
+										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
+										</th>
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+											Price
+										</th>
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+											Total
+										</th>
+									</tr>
+								</thead>
+								<tbody class="text-slate-700">
+									<tr v-for="(item, i) in selectedReceipt.items" :key="i"
+										class="border-b border-slate-100">
+										<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
+										<td class="py-4 text-center">{{ item.qty }}</td>
+										<td class="py-4 text-right">{{ formatCurrency(item.price) }}</td>
+										<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty
+											*
+											item.price) }}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<!-- Summaries -->
+						<div class="flex justify-end mb-16">
+							<div class="w-full">
+								<div class="flex justify-end">
+									<div class="w-1/2 space-y-3">
+										<div class="flex justify-between text-slate-500">
+											<span>Subtotal</span>
+											<span>{{ formatCurrency(calculateSubtotal(selectedReceipt)) }}</span>
+										</div>
+										<div class="flex justify-between text-slate-500"
+											v-if="selectedReceipt.taxRate && selectedReceipt.taxRate > 0">
+											<span>Tax ({{ selectedReceipt.taxRate }}%)</span>
+											<span>{{ formatCurrency(calculateTax(selectedReceipt)) }}</span>
+										</div>
+										<div class="flex justify-between text-slate-500"
+											v-if="selectedReceipt.discount > 0">
+											<span>Discount</span>
+											<span class="text-red-500">- {{ formatCurrency(selectedReceipt.discount)
+											}}</span>
+										</div>
+										<div
+											class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
+											<span>Total</span>
+											<span>{{ formatCurrency(calculateTotal(selectedReceipt)) }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Signatures -->
+						<div class="grid grid-cols-2 gap-12 mb-8 mt-auto">
+							<div>
+								<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
+								<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
+								</div>
+							</div>
+							<div>
+								<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
+									<!-- Optional Placeholder for Stamp area -->
+								</div>
+								<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
+									Signature</div>
+							</div>
+						</div>
+
+						<!-- Footer -->
+						<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+							<p>Thank you for your business!</p>
+							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
+						</div>
+
+					</div>
+
+				</div>
+
+				<!-- FAB / Speed Dial -->
+				<div class="absolute bottom-8 right-8 z-[100] hidden-on-print">
+					<div class="dropdown dropdown-top dropdown-end">
+						<label tabindex="0"
+							class="btn btn-primary btn-circle btn-lg shadow-2xl hover:scale-110 transition-transform">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-black" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+									d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+							</svg>
+						</label>
+						<ul tabindex="0"
+							class="dropdown-content menu p-3 shadow-2xl bg-neutral text-white rounded-none w-56 mb-4 border border-base-300">
+							<li class="menu-title text-xs uppercase opacity-50 mb-1">Receipt Actions</li>
+							<li>
+								<a @click="editSelectedReceipt"
+									class="flex gap-3 items-center py-3 hover:bg-primary hover:text-black">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+										viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+									</svg>
+									Edit Receipt
+								</a>
+							</li>
+							<li>
+								<a @click="printSelectedReceipt" class="flex gap-3 items-center py-3">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+										viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+									</svg>
+									Print Receipt
+								</a>
+							</li>
+							<div class="divider my-1 opacity-20"></div>
+							<li>
+								<a @click="deleteSelectedReceipt"
+									class="flex gap-3 items-center py-3 text-error hover:bg-error hover:text-white">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+										viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+									</svg>
+									Delete Receipt
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>close</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import { reactive, computed } from 'vue';
+import { reactive, computed, ref, onMounted, watch } from 'vue';
 
 const formatDateForInput = (date: Date) => {
 	return date.toISOString().split('T')[0];
 };
 
-const receipt = reactive({
-	companyName: 'Ebbysgold Travels',
-	companyAddress: '123 Business St, Gold City',
-	companyPhone: '+1 (555) 123-4567',
-	companyEmail: 'info@ebbysgold.com',
-	date: formatDateForInput(new Date()),
-	number: 'REC-' + Math.floor(100000 + Math.random() * 900000),
-	customerName: '',
-	customerAddress: '',
-	customerEmail: '',
-	items: [
-		{ description: 'Consultation Service', qty: 1, price: 150 },
-		{ description: 'Gold Plating Service', qty: 2, price: 75.50 },
-	],
-	taxRate: 10,
-	discount: 0,
-});
+const activeTab = ref('view');
+const savedReceipts = ref<any[]>([]);
+const selectedReceipt = ref<any>(null);
+
+const openReceiptModal = (receiptData: any) => {
+	selectedReceipt.value = receiptData;
+	// Show the modal using DaisyUI method (HTMLDialogElement)
+	const modal = document.getElementById('receipt_modal') as HTMLDialogElement;
+	if (modal) {
+		modal.showModal();
+	}
+};
+
+const closeReceiptModal = () => {
+	const modal = document.getElementById('receipt_modal') as HTMLDialogElement;
+	if (modal) modal.close();
+};
+
+const editSelectedReceipt = () => {
+	if (selectedReceipt.value) {
+		loadReceipt(selectedReceipt.value);
+		closeReceiptModal();
+	}
+};
+
+const deleteSelectedReceipt = () => {
+	if (selectedReceipt.value) {
+		const index = savedReceipts.value.findIndex(r => r.number === selectedReceipt.value.number);
+		if (index !== -1) {
+			deleteReceipt(index);
+			closeReceiptModal();
+		}
+	}
+};
+
+const printSelectedReceipt = () => {
+	if (selectedReceipt.value) {
+		// Load into the active receipt state for printing
+		Object.assign(receipt, JSON.parse(JSON.stringify(selectedReceipt.value)));
+		closeReceiptModal(); // Close modal to allow print view to take over if needed, or just print
+		setTimeout(() => {
+			window.print();
+		}, 100);
+	}
+};
+
+// Default receipt state
+const createDefaultReceipt = () => {
+	let nextNum = 1;
+	if (savedReceipts.value.length > 0) {
+		const nums = savedReceipts.value.map(r => {
+			const m = r.number && typeof r.number === 'string' ? r.number.match(/#(\d+)/) : null;
+			return m ? parseInt(m[1]) : 0;
+		});
+		const max = Math.max(...nums, 0);
+		nextNum = max + 1;
+	}
+
+	return {
+		companyName: 'Ebbysgold Travels',
+		companyAddress: 'Plot 158, Spintex Road, Accra',
+		companyPhone: '+233 53 780 4885',
+		companyEmail: 'ebbysgold@gmail.com',
+		date: formatDateForInput(new Date()),
+		number: '#' + nextNum.toString().padStart(7, '0'),
+		customerName: '',
+		items: [
+			{ description: '', qty: 1, price: 0 },
+		],
+		taxRate: 0,
+		discount: 0,
+	};
+};
+
+const receipt = reactive(createDefaultReceipt());
 
 // Computed properties
 const subtotal = computed(() => {
@@ -284,11 +616,25 @@ const formattedDate = computed(() => {
 	});
 });
 
-// Helper functions
+// Helper functions for list view
+const calculateSubtotal = (r: any) => {
+	return r.items.reduce((acc: number, item: any) => acc + (item.qty * item.price), 0);
+};
+
+const calculateTax = (r: any) => {
+	return calculateSubtotal(r) * (r.taxRate / 100);
+};
+
+const calculateTotal = (r: any) => {
+	const sub = calculateSubtotal(r);
+	const tax = calculateTax(r);
+	return sub + tax - r.discount;
+};
+
 const formatCurrency = (value: number) => {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
+	return 'GHS ' + new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
 	}).format(value);
 };
 
@@ -302,14 +648,147 @@ const removeItem = (index: number) => {
 	}
 };
 
-const printReceipt = () => {
-	window.print();
+
+
+const createNew = () => {
+	Object.assign(receipt, createDefaultReceipt());
+	activeTab.value = 'create';
 };
 
+// Persistence Logic
+const STORAGE_KEY = 'ebbysgold_receipts';
+
+const loadFromStorage = () => {
+	if (typeof localStorage !== 'undefined') {
+		const stored = localStorage.getItem(STORAGE_KEY);
+		if (stored) {
+			try {
+				savedReceipts.value = JSON.parse(stored);
+			} catch (e) {
+				console.error('Failed to parse receipts', e);
+			}
+		}
+	}
+};
+
+const saveToStorage = () => {
+	if (typeof localStorage !== 'undefined') {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReceipts.value));
+	}
+};
+
+const saveAndPrint = () => {
+	// 1. Save Logic
+	const index = savedReceipts.value.findIndex(r => r.number === receipt.number);
+	const receiptData = JSON.parse(JSON.stringify(receipt)); // Deep copy
+
+	if (index >= 0) {
+		savedReceipts.value[index] = receiptData;
+	} else {
+		savedReceipts.value.unshift(receiptData);
+	}
+	saveToStorage();
+
+	// 2. Print Logic
+	// Small delay to ensure state update if any? Not strictly needed for Vue reactive, but good for UI feedback if we had any.
+	// Since we removed the alert, it just saves and pops print dialog.
+	setTimeout(() => {
+		window.print();
+	}, 100);
+};
+
+const loadReceipt = (saved: any) => {
+	Object.assign(receipt, JSON.parse(JSON.stringify(saved))); // Deep copy
+	activeTab.value = 'create';
+};
+
+const deleteReceipt = (index: number) => {
+	if (confirm('Are you sure you want to delete this receipt?')) {
+		savedReceipts.value.splice(index, 1);
+		saveToStorage();
+	}
+};
+
+onMounted(() => {
+	loadFromStorage();
+});
+
 useHead({
-	title: 'Receipt Generator | Ebbys Gold'
+	title: 'Receipt | Ebbys Gold'
 })
+
+const handleCardMouseMove = (e: MouseEvent) => {
+	const card = e.currentTarget as HTMLElement;
+	const rect = card.getBoundingClientRect();
+	const x = e.clientX - rect.left;
+	const y = e.clientY - rect.top;
+	card.style.setProperty('--mouse-x', `${x}px`);
+	card.style.setProperty('--mouse-y', `${y}px`);
+};
 </script>
+
+<style scoped>
+.shiny-card {
+	--mouse-x: 0px;
+	--mouse-y: 0px;
+	position: relative;
+	background: #1a1a1a;
+	/* Dark background matching theme */
+	border: 1px solid #333;
+}
+
+.shiny-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+			rgba(255, 215, 0, 0.4),
+			transparent 40%);
+	opacity: 0;
+	transition: opacity 0.5s;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.shiny-card:hover::before {
+	opacity: 1;
+}
+
+.shiny-card::after {
+	/* The border effect */
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: inherit;
+	padding: 1px;
+	/* Border width */
+	background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+			rgba(255, 215, 0, 0.8),
+			transparent 40%);
+	mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	-webkit-mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	mask-composite: exclude;
+	-webkit-mask-composite: xor;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.shiny-card .card-body {
+	position: relative;
+	z-index: 2;
+	/* Ensure content is above the shine */
+}
+</style>
 
 <style>
 @media print {
