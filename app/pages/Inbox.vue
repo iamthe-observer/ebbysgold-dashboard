@@ -1,17 +1,30 @@
 <template>
-	<main clas="flex flex-col gap-2 w-full h-full">
-		<div class="tabs tabs-box bg-neutral rounded-none">
+	<main class="flex flex-col gap-2 w-full h-full overflow-hidden">
+		<!-- Tabs Container -->
+		<div class="bg-neutral overflow-x-auto no-scrollbar border-b border-white/5">
+			<div class="flex flex-nowrap min-w-max">
+				<button v-for="tab in tabList" :key="tab.id" @click="activeTab = tab.id"
+					class="px-6 py-4 text-sm font-bold transition-all duration-200 border-b-2" :class="activeTab === tab.id
+						? 'border-amber-400 text-amber-400 bg-black/20'
+						: 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'">
+					{{ tab.label }}
+					<span v-if="tab.count > 0" class="ml-2 badge badge-ghost badge-sm border-none bg-white/10">{{
+						tab.count
+						}}</span>
+				</button>
+			</div>
+		</div>
 
-			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
-				:aria-label="`REGISTRATIONS ${registrations.length == 0 ? '' : registrations.length}`"
-				:checked="checked" />
-			<div class="tab-content bg-black rounded-none p-6">
+		<!-- Tab Content -->
+		<div class="flex-grow overflow-y-auto">
+			<!-- Registrations Content -->
+			<div v-if="activeTab === 'registrations'" class="bg-black p-4 md:p-6">
 				<section class="">
-					<table class="table">
+					<table class="table w-full">
 						<!-- head -->
 						<thead>
 							<tr>
-								<th colspan="7">
+								<th colspan="7" class="whitespace-normal">
 									<div class="p-2">
 										<input v-model="regSearch" type="text" placeholder="Search Registrations..."
 											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
@@ -21,11 +34,11 @@
 							<tr>
 								<th>#</th>
 								<th>Name</th>
-								<th>Unique Reference</th>
-								<th>Phone</th>
-								<th>Email</th>
-								<th>Gender</th>
-								<th>Package Type</th>
+								<th class="hidden sm:table-cell">Unique Reference</th>
+								<th class="hidden md:table-cell">Phone</th>
+								<th class="hidden lg:table-cell">Email</th>
+								<th class="hidden xl:table-cell">Gender</th>
+								<th class="hidden lg:table-cell">Package Type</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -34,17 +47,17 @@
 								@click="curr_reg = reg" v-for="(reg, i) in filteredRegistrations" :key="i">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ reg.firstName }} {{ reg.lastName }}</td>
-								<td class="text-amber-100 font-bold text-xl">{{ reg.uniqueID }}</td>
-								<td>{{ reg.phone }}</td>
-								<td>{{ reg.email }}</td>
-								<td>{{ reg.gender }}</td>
-								<td>{{ reg.package }}</td>
+								<td class="text-amber-100 font-bold text-xl hidden sm:table-cell">{{ reg.uniqueID }}
+								</td>
+								<td class="hidden md:table-cell">{{ reg.phone }}</td>
+								<td class="hidden lg:table-cell">{{ reg.email }}</td>
+								<td class="hidden xl:table-cell">{{ reg.gender }}</td>
+								<td class="hidden lg:table-cell">{{ reg.package }}</td>
 							</tr>
 						</tbody>
-
-						<!-- Modal display -->
 					</table>
 
+					<!-- Modal display -->
 					<dialog id="registration" class="modal">
 						<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
 							<form method="dialog">
@@ -99,15 +112,13 @@
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
-				:aria-label="`MESSAGES ${messages.length == 0 ? '' : messages.length}`" />
-			<div class="tab-content rounded-none bg-black p-6">
+			<!-- Messages Content -->
+			<div v-if="activeTab === 'messages'" class="bg-black p-4 md:p-6">
 				<section class="">
-					<table class="table">
-						<!-- head -->
+					<table class="table w-full">
 						<thead>
 							<tr>
-								<th colspan="4">
+								<th colspan="4" class="whitespace-normal">
 									<div class="p-2">
 										<input v-model="msgSearch" type="text" placeholder="Search Messages..."
 											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
@@ -117,7 +128,7 @@
 							<tr>
 								<th>#</th>
 								<th>Name</th>
-								<th>Email</th>
+								<th class="hidden sm:table-cell">Email</th>
 								<th>Message</th>
 							</tr>
 						</thead>
@@ -125,9 +136,9 @@
 							<tr class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
 								v-for="(msg, i) in filteredMessages" onclick="message1.showModal()"
 								@click="curr_msg = msg">
-								<th class="text-white/20">{{ i }}</th>
+								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ msg.fullName }}</td>
-								<td>{{ msg.email }}</td>
+								<td class="hidden sm:table-cell">{{ msg.email }}</td>
 								<td class="truncate h-8 w-40 line-clamp-1">{{ msg.message }}</td>
 							</tr>
 						</tbody>
@@ -150,20 +161,18 @@
 				</section>
 			</div>
 
-			<input type="radio" name="my_tabs_6" class="bg-transparent tab rounded-none"
-				:aria-label="`APPOINTMENTS ${appointments.length == 0 ? '' : appointments.length}`" />
-			<div class="tab-content rounded-none bg-black p-6">
+			<!-- Appointments Content -->
+			<div v-if="activeTab === 'appointments'" class="bg-black p-4 md:p-6">
 				<section class="">
-					<table class="table">
-						<!-- head -->
+					<table class="table w-full">
 						<thead>
 							<tr>
-								<th colspan="7">
-									<div class="flex gap-4 p-2 items-center">
+								<th colspan="7" class="whitespace-normal">
+									<div class="flex flex-col sm:flex-row gap-4 p-2 items-start sm:items-center">
 										<input v-model="appSearch" type="text" placeholder="Search Appointments..."
 											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
 										<select v-model="appStatusFilter"
-											class="select bg-neutral select-bordered select-sm rounded-none">
+											class="select bg-neutral select-bordered select-sm rounded-none w-full sm:w-auto">
 											<option value="">All Statuses</option>
 											<option value="pending">Pending</option>
 											<option value="attended">Attended</option>
@@ -177,9 +186,9 @@
 							<tr>
 								<th>#</th>
 								<th>Name</th>
-								<th>Created At</th>
-								<th>Phone</th>
-								<th>Email</th>
+								<th class="hidden md:table-cell">Created At</th>
+								<th class="hidden sm:table-cell">Phone</th>
+								<th class="hidden lg:table-cell">Email</th>
 								<th>Appointment Date</th>
 								<th>Status</th>
 							</tr>
@@ -188,17 +197,20 @@
 							<tr class="" v-for="(app, i) in filteredAppointments" :key="i">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ app.fullName }}</td>
-								<td>{{ formatDateTime(app.created_at) }}</td>
-								<td>{{ app.phone }}</td>
-								<td>{{ app.email }}</td>
+								<td class="hidden md:table-cell">{{ formatDateTime(app.created_at) }}</td>
+								<td class="hidden sm:table-cell">{{ app.phone }}</td>
+								<td class="hidden lg:table-cell">{{ app.email }}</td>
 								<td>{{ formatDateTime(app.date) }}</td>
 								<td>
 									<select :value="app.status || 'pending'"
 										@change="updateAppointmentStatus(app, ($event.target as HTMLSelectElement).value)"
-										class="select select-ghost select-xs rounded-none" :class="{
-											'text-warning': !app.status || app.status === 'pending',
-											'text-success': app.status === 'attended' || app.status === 'accepted',
-											'text-error': app.status === 'cancelled' || app.status === 'denied'
+										class="select select-bordered select-xs rounded-none w-full sm:w-auto font-bold"
+										:class="{
+											'text-[#FBBF24]': !app.status || app.status === 'pending',
+											'text-[#4ADE80]': app.status === 'accepted',
+											'text-[#60A5FA]': app.status === 'attended',
+											'text-[#F87171]': app.status === 'cancelled',
+											'text-[#9CA3AF]': app.status === 'denied'
 										}">
 										<option value="pending">Pending</option>
 										<option value="attended">Attended</option>
@@ -212,8 +224,6 @@
 					</table>
 				</section>
 			</div>
-
-
 		</div>
 	</main>
 </template>
@@ -239,7 +249,13 @@ function formatDateTime(date: string) {
 
 const { registrations, messages, appointments } = storeToRefs(useAppStore())
 const { $supabase } = useNuxtApp()
-const checked = ref(true)
+const activeTab = ref('registrations')
+
+const tabList = computed(() => [
+	{ id: 'registrations', label: 'REGISTRATIONS', count: registrations.value.length },
+	{ id: 'messages', label: 'MESSAGES', count: messages.value.length },
+	{ id: 'appointments', label: 'APPOINTMENTS', count: appointments.value.length }
+])
 
 // Search and Filter States
 const regSearch = ref('')

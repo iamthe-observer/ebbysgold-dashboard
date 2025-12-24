@@ -7,7 +7,7 @@
 					<tr>
 						<th>#</th>
 						<th>Name</th>
-						<th>Email</th>
+						<th class="hidden sm:table-cell">Email</th>
 						<th>Message</th>
 					</tr>
 				</thead>
@@ -17,7 +17,7 @@
 						@click="curr_msg = reg" v-for="(reg, i) in recent_msg" :key="i">
 						<th class="text-white/20">{{ i + 1 }}</th>
 						<td>{{ reg.fullName }}</td>
-						<td>{{ reg.email }}</td>
+						<td class="hidden sm:table-cell">{{ reg.email }}</td>
 						<td class="truncate">{{ reg.message }}</td>
 					</tr>
 				</tbody>

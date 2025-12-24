@@ -4,8 +4,20 @@
 
 		<!-- Create Receipt Tab -->
 		<div v-show="activeTab === 'create'" class="flex flex-col lg:flex-row flex-grow overflow-hidden relative">
+			<!-- Mobile Toggle (Visible only on lg and below) -->
+			<div class="lg:hidden flex border-b border-white/10 p-2 gap-2 bg-black z-20">
+				<button @click="mobileMode = 'edit'" class="btn btn-sm flex-1 rounded-none"
+					:class="mobileMode === 'edit' ? 'bg-amber-400 text-black outline-none border-none' : 'btn-ghost'">Edit
+					Receipt</button>
+				<button @click="mobileMode = 'preview'" class="btn btn-sm flex-1 rounded-none relative"
+					:class="mobileMode === 'preview' ? 'bg-amber-400 text-black outline-none border-none' : 'btn-ghost'">
+					Preview
+					<span class="badge badge-xs badge-warning absolute top-1 right-1"></span>
+				</button>
+			</div>
 			<!-- Configuration Panel (Left Side) -->
-			<div class="w-full lg:w-1/3 bg-black border-r border-base-300 overflow-y-auto p-6 hidden-on-print">
+			<div class="w-full lg:w-1/3 bg-black border-r border-base-300 overflow-y-auto p-6 hidden-on-print"
+				:class="{ 'hidden lg:block': mobileMode === 'preview' }">
 				<div class="flex justify-between items-center mb-6">
 					<div class="flex items-center gap-2">
 						<button @click="activeTab = 'view'" class="btn btn-ghost btn-sm btn-square rounded-none">
@@ -124,11 +136,11 @@
 			</div>
 
 			<!-- Preview Panel (Right Side) -->
-			<div
-				class="w-full lg:w-2/3 bg-black p-8 overflow-y-auto flex justify-center items-start print-area-container">
+			<div class="w-full lg:w-2/3 bg-black p-4 md:p-8 overflow-y-auto flex justify-center items-start print-area-container"
+				:class="{ 'hidden lg:flex': mobileMode === 'edit' }">
 				<!-- Receipt Paper -->
 				<div id="printable-receipt"
-					class="bg-white text-black w-full max-w-[21cm] min-h-[29.7cm] shadow-2xl p-12 relative flex flex-col">
+					class="bg-white text-black w-full max-w-[21cm] min-h-[29.7cm] shadow-2xl p-6 md:p-12 relative flex flex-col origin-top scale-[0.9] sm:scale-100">
 
 					<!-- Header -->
 					<div class="flex justify-between items-start mb-12">
@@ -535,6 +547,7 @@ const formatDateForInput = (date: Date) => {
 };
 
 const activeTab = ref('view');
+const mobileMode = ref<'edit' | 'preview'>('edit');
 const selectedReceipt = ref<Receipt>();
 const receiptSearch = ref('');
 

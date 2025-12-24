@@ -1,19 +1,19 @@
 ```vue
 <template>
-	<div class="flex h-[calc(100vh-4rem)] bg-base-100">
+	<div class="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-4rem)] bg-base-100 overflow-hidden">
 		<!-- Sidebar Navigation -->
-		<div class="w-64 bg-base-200 border-r border-base-300 flex-shrink-0 flex flex-col">
-			<div class="p-4 border-b border-base-300">
+		<div class="w-full lg:w-64 bg-base-200 border-b lg:border-r border-base-300 flex-shrink-0 flex flex-col">
+			<div class="p-4 border-b border-base-300 hidden lg:block">
 				<h2 class="font-bold text-lg">Content Manager</h2>
 			</div>
-			<ul class="menu p-2 flex-grow overflow-y-auto w-full">
-				<li v-for="section in sections" :key="section.id">
-					<a :class="{ 'active': activeSection === section.id }" @click="activeSection = section.id">
+			<ul class="menu p-2 flex-grow flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto w-full no-scrollbar flex-nowrap">
+				<li v-for="section in sections" :key="section.id" class="flex-shrink-0">
+					<a :class="{ 'active': activeSection === section.id }" @click="activeSection = section.id" class="whitespace-nowrap px-4 py-2">
 						{{ section.label }}
 					</a>
 				</li>
 			</ul>
-			<div class="p-4 border-t border-base-300">
+			<div class="p-4 border-t border-base-300 lg:block hidden">
 				<button class="btn btn-primary w-full" @click="saveData" :disabled="loading">
 					<span v-if="loading" class="loading loading-spinner"></span>
 					{{ loading ? 'Saving...' : 'Save Changes' }}
@@ -22,13 +22,13 @@
 		</div>
 
 		<!-- Main Content Area -->
-		<div class="flex-grow overflow-y-auto p-8">
+		<div class="flex-grow overflow-y-auto p-4 md:p-8">
 			<div v-if="initialLoading" class="flex justify-center items-center h-full">
 				<span class="loading loading-spinner loading-lg text-primary"></span>
 			</div>
 
-			<div v-else class="max-w-4xl mx-auto pb-20">
-				<h1 class="text-3xl font-bold mb-8 capitalize">{{ activeSectionLabel }}</h1>
+			<div v-else class="max-w-4xl mx-auto pb-32 md:pb-20">
+				<h1 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 capitalize">{{ activeSectionLabel }}</h1>
 
 				<!-- General Section -->
 				<div v-if="activeSection === 'general'" class="space-y-6">
@@ -56,7 +56,7 @@
 
 				<!-- Why Choose Us -->
 				<div v-if="activeSection === 'why_choose_us'" class="space-y-6">
-					<div class="grid grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="form-control">
 							<label class="label"><span class="label-text">Title</span></label>
 							<input v-model="formData.why_choose_us.title" type="text" class="input input-bordered" />
@@ -103,12 +103,12 @@
 								class="btn btn-sm btn-error">Remove</button>
 						</div>
 
-						<div class="flex gap-6">
-							<div class="w-1/3">
+						<div class="flex flex-col md:flex-row gap-6">
+							<div class="w-full md:w-1/3">
 								<ImageUploader :model-value="service.src" @update:model-value="val => service.src = val"
 									label="Service Image" />
 							</div>
-							<div class="w-2/3 space-y-3">
+							<div class="w-full md:w-2/3 space-y-3">
 								<div class="form-control">
 									<label class="label"><span class="label-text">Title</span></label>
 									<input v-model="service.title" type="text" class="input input-bordered input-sm" />
@@ -237,14 +237,14 @@
 
 							<div class="divider">Highlights</div>
 							<div v-for="(hl, hIdx) in formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights"
-								:key="hIdx" class="flex gap-2 mb-2">
+								:key="hIdx" class="flex flex-col md:flex-row gap-2 mb-4 md:mb-2 bg-base-100 p-2 md:p-0 rounded border md:border-none border-base-300">
 								<input v-model="hl.title" placeholder="Title"
 									class="input input-bordered input-sm flex-1" />
 								<input v-model="hl.description" placeholder="Description"
 									class="input input-bordered input-sm flex-1" />
 								<button
 									@click="removeArrayItem(formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights, hIdx)"
-									class="btn btn-square btn-sm btn-ghost text-error">✕</button>
+									class="btn btn-square btn-sm btn-ghost text-error self-end">✕</button>
 							</div>
 							<button
 								@click="addHighlight(formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights)"
@@ -268,13 +268,13 @@
 								class="btn btn-sm btn-error">Remove</button>
 						</div>
 
-						<div class="flex gap-4">
-							<div class="w-24">
+						<div class="flex flex-col sm:flex-row gap-4">
+							<div class="w-full sm:w-24">
 								<ImageUploader :model-value="review.src" @update:model-value="val => review.src = val"
 									label="Avatar" />
 							</div>
 							<div class="flex-grow space-y-2">
-								<div class="grid grid-cols-2 gap-2">
+								<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 									<input v-model="review.reviewer" placeholder="Name"
 										class="input input-bordered input-sm" />
 									<input v-model="review.rating" placeholder="Rating (e.g. 5.0)"
@@ -289,6 +289,14 @@
 				</div>
 
 			</div>
+		</div>
+
+		<!-- Mobile Save Button (FAB style or fixed bottom) -->
+		<div class="lg:hidden fixed bottom-6 right-6 z-50">
+			<button class="btn btn-primary shadow-2xl rounded-full px-6" @click="saveData" :disabled="loading">
+				<span v-if="loading" class="loading loading-spinner"></span>
+				{{ loading ? '...' : 'Save' }}
+			</button>
 		</div>
 	</div>
 </template>

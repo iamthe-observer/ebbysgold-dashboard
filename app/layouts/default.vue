@@ -1,11 +1,11 @@
 <template>
-  <div class="drawer lg:drawer-open">
+  <div class="drawer h-screen bg-neutral lg:drawer-open">
     <input id="my-drawer" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col bg-neutral relative">
       <!-- Navbar -->
       <TopNav />
       <!-- Page Content -->
-      <main class="flex-1 p-6 bg-neutral">
+      <main class="flex-1 p-4 md:p-6 bg-neutral">
         <slot />
       </main>
     </div>

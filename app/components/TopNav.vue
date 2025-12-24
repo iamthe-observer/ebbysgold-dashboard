@@ -12,7 +12,7 @@
       <a class="btn btn-ghost text-xl lg:hidden">EbbysGold</a>
       <h2 class="text-xl font-semibold hidden uppercase lg:block px-4">Dashboard</h2>
     </div>
-    <div class="flex pr-8 gap-2">
+    <div class="flex pr-4 md:pr-8 gap-2">
       <!-- <div class="form-control hidden sm:block">
         <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto rounded-none bg-neutral" />
       </div> -->

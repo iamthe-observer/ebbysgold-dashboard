@@ -7,11 +7,11 @@
           <tr>
             <th>#</th>
             <th>Name</th>
-            <th>Unique Reference</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Gender</th>
-            <th>Package Type</th>
+            <th class="hidden sm:table-cell">Unique Reference</th>
+            <th class="hidden md:table-cell">Phone</th>
+            <th class="hidden lg:table-cell">Email</th>
+            <th class="hidden xl:table-cell">Gender</th>
+            <th class="hidden lg:table-cell">Package Type</th>
           </tr>
         </thead>
         <tbody>
@@ -20,11 +20,11 @@
             v-for="(reg, i) in recent_reg" :key="i">
             <th class="text-white/20">{{ i + 1 }}</th>
             <td>{{ reg.firstName }} {{ reg.lastName }}</td>
-            <td>{{ reg.uniqueID }}</td>
-            <td>{{ reg.phone }}</td>
-            <td>{{ reg.email }}</td>
-            <td>{{ reg.gender }}</td>
-            <td>{{ reg.package }}</td>
+            <td class="hidden sm:table-cell">{{ reg.uniqueID }}</td>
+            <td class="hidden md:table-cell">{{ reg.phone }}</td>
+            <td class="hidden lg:table-cell">{{ reg.email }}</td>
+            <td class="hidden xl:table-cell">{{ reg.gender }}</td>
+            <td class="hidden lg:table-cell">{{ reg.package }}</td>
           </tr>
         </tbody>
 
