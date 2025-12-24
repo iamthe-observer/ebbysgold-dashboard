@@ -10,7 +10,7 @@
 					{{ tab.label }}
 					<span v-if="tab.count > 0" class="ml-2 badge badge-ghost badge-sm border-none bg-white/10">{{
 						tab.count
-						}}</span>
+					}}</span>
 				</button>
 			</div>
 		</div>
@@ -24,10 +24,16 @@
 						<!-- head -->
 						<thead>
 							<tr>
-								<th colspan="7" class="whitespace-normal">
-									<div class="p-2">
+								<th colspan="8" class="whitespace-normal">
+									<div class="flex flex-col sm:flex-row gap-4 p-2 items-start sm:items-center">
 										<input v-model="regSearch" type="text" placeholder="Search Registrations..."
 											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
+										<select v-model="regStatusFilter"
+											class="select bg-neutral select-bordered select-sm rounded-none w-full sm:w-auto">
+											<option value="">All Statuses</option>
+											<option value="new">New</option>
+											<option value="downloaded">Downloaded</option>
+										</select>
 									</div>
 								</th>
 							</tr>
@@ -37,8 +43,8 @@
 								<th class="hidden sm:table-cell">Unique Reference</th>
 								<th class="hidden md:table-cell">Phone</th>
 								<th class="hidden lg:table-cell">Email</th>
-								<th class="hidden xl:table-cell">Gender</th>
 								<th class="hidden lg:table-cell">Package Type</th>
+								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -51,62 +57,190 @@
 								</td>
 								<td class="hidden md:table-cell">{{ reg.phone }}</td>
 								<td class="hidden lg:table-cell">{{ reg.email }}</td>
-								<td class="hidden xl:table-cell">{{ reg.gender }}</td>
 								<td class="hidden lg:table-cell">{{ reg.package }}</td>
+								<td>
+									<div class="badge badge-sm font-bold border-none" :class="{
+										'bg-yellow-400 text-black': !reg.status || reg.status === 'new',
+										'bg-green-400 text-black': reg.status === 'downloaded'
+									}">
+										{{ reg.status || 'new' }}
+									</div>
+								</td>
 							</tr>
 						</tbody>
 					</table>
 
-					<!-- Modal display -->
+					<!-- Professional Registration Modal -->
 					<dialog id="registration" class="modal">
-						<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
-							<form method="dialog">
-								<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-							</form>
+						<div class="modal-box w-11/12 max-w-5xl bg-white text-black p-0 rounded-none overflow-hidden">
+							<div class="overflow-y-auto max-h-[80vh] p-4 md:p-12 relative">
+								<form method="dialog">
+									<button
+										class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-black z-50">✕</button>
+								</form>
 
+								<!-- Registration Document -->
+								<div id="printable-registration"
+									class="bg-white text-black w-full relative flex flex-col">
+									<!-- Header -->
+									<div
+										class="flex justify-between items-start mb-12 border-b-2 border-slate-100 pb-8">
+										<div>
+											<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
+												<NuxtImg src="/logob.png" class="w-48 aspect-video object-cover"
+													alt="Ebbysgold Logo" />
+											</h1>
+											<div class="text-slate-500 text-sm leading-relaxed">
+												<p>Plot 158, Spintex Road, Accra</p>
+												<p>+233 53 780 4885 • ebbysgold@gmail.com</p>
+											</div>
+										</div>
+										<div class="text-right">
+											<div class="text-sm text-slate-400 uppercase tracking-widest mb-1">
+												UNIQUE ID</div>
+											<div class="text-2xl font-mono font-bold text-amber-500">{{
+												curr_reg!.uniqueID }}</div>
+											<div class="text-sm text-slate-400 uppercase tracking-widest mt-4">Date
+											</div>
+											<div class="text-lg font-medium text-slate-800">{{ new
+												Date(curr_reg!.created_at).toLocaleDateString('en-GB') }}</div>
+										</div>
+									</div>
 
-							<h3 class="text-lg font-bold flex justify-start gap-5 items-center">{{ curr_reg!.firstName
-							}} {{
-									curr_reg!.lastName }} <span class="text-black px-2 py-1 bg-amber-400">{{
-									curr_reg!.uniqueID
-								}}</span>
-							</h3>
-							<p class="py-4 flex flex-col">
-								<span class="font-bold">Phone: <span class="font-normal pl-3">{{ curr_reg!.phone
-								}}</span></span>
-								<span class="font-bold">Date of Birth: <span class="font-normal pl-3">{{
-									new Date(curr_reg!.dob).toLocaleDateString('en-GB')
-								}}</span></span>
-								<span class="font-bold">WhatsApp: <span class="font-normal pl-3">{{ curr_reg!.whatsapp
-								}}</span></span>
-								<span class="font-bold">Email: <span class="font-normal pl-3">{{ curr_reg!.email
-								}}</span></span>
-								<span class="font-bold">Gender: <span class="font-normal pl-3">{{ curr_reg!.gender
-								}}</span></span>
-								<span class="font-bold">Package: <span class="font-normal pl-3">{{ curr_reg!.package
-								}}</span></span>
-								<span class="font-bold">Room Type: <span class="font-normal pl-3">{{ curr_reg!.roomType
-								}}</span></span>
-								<span class="font-bold">Has Visa: <span class="font-normal pl-3">{{ curr_reg!.hasVisa
-								}}</span></span>
-								<span class="font-bold">Visa Country: <span class="font-normal pl-3">{{
-									curr_reg!.visaCountry
-								}}</span></span>
-								<span class="font-bold">Visa Assist: <span class="font-normal pl-3">{{
-									curr_reg!.visaAssist
-								}}</span></span>
-								<span class="font-bold">Address: <span class="font-normal pl-3">{{ curr_reg!.addr
-								}}</span></span>
-								<span class="font-bold">Passport Number: <span class="font-normal pl-3">{{
-									curr_reg!.passNo
-								}}</span></span>
-								<span class="font-bold">Passport Expiry: <span class="font-normal pl-3">{{
-									curr_reg!.passExp
-								}}</span></span>
-								<span class="font-bold">Registered Date: <span class="font-normal pl-3">{{
-									new Date(curr_reg!.created_at).toLocaleDateString('en-GB')
-								}}</span></span>
-							</p>
+									<!-- Applicant Information -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+										<div class="space-y-4">
+											<h4
+												class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+												Applicant Information</h4>
+											<div class="grid grid-cols-2 gap-2 text-sm">
+												<span class="font-bold text-slate-500">Full Name:</span>
+												<span class="text-slate-800">{{ curr_reg!.firstName }} {{
+													curr_reg!.lastName }}</span>
+
+												<span class="font-bold text-slate-500">Gender:</span>
+												<span class="text-slate-800">{{ curr_reg!.gender }}</span>
+
+												<span class="font-bold text-slate-500">Date of Birth:</span>
+												<span class="text-slate-800">{{ new
+													Date(curr_reg!.dob).toLocaleDateString('en-GB') }}</span>
+
+												<span class="font-bold text-slate-500">Phone:</span>
+												<span class="text-slate-800">{{ curr_reg!.phone || 'N/A' }}</span>
+
+												<span class="font-bold text-slate-500">WhatsApp:</span>
+												<span class="text-slate-800">{{ curr_reg!.whatsapp || 'N/A' }}</span>
+
+												<span class="font-bold text-slate-500">Email:</span>
+												<span class="text-slate-800">{{ curr_reg!.email || 'N/A'
+												}}</span>
+											</div>
+										</div>
+										<div class="space-y-4">
+											<h4
+												class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+												Travel & Package Details</h4>
+											<div class="grid grid-cols-2 gap-2 text-sm">
+												<span class="font-bold text-slate-500">Package:</span>
+												<span class="text-amber-600 font-bold">{{ curr_reg!.package || 'N/A'
+												}}</span>
+
+												<span class="font-bold text-slate-500">Room Type:</span>
+												<span class="text-slate-800">{{ curr_reg!.roomType || 'N/A' }}</span>
+
+												<span class="font-bold text-slate-500">Has Visa:</span>
+												<span class="text-slate-800">{{ curr_reg!.hasVisa ? 'Yes' : 'No'
+												}}</span>
+
+												<span class="font-bold text-slate-500">Visa Country:</span>
+												<span class="text-slate-800">{{ curr_reg!.visaCountry || 'N/A' }}</span>
+
+												<span class="font-bold text-slate-500">Visa Assistance:</span>
+												<span class="text-slate-800">{{ curr_reg!.visaAssist || 'N/A' }}</span>
+											</div>
+										</div>
+									</div>
+
+									<!-- Address and Identity -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+										<div class="space-y-4">
+											<h4
+												class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+												Identity Details</h4>
+											<div class="grid grid-cols-2 gap-2 text-sm">
+												<span class="font-bold text-slate-500">Passport Number:</span>
+												<span class="text-slate-800 font-mono">{{ curr_reg!.passNo || 'N/A'
+												}}</span>
+
+												<span class="font-bold text-slate-500">Passport Expiry:</span>
+												<span class="text-slate-800">{{ curr_reg!.passExp !== '//' ?
+													curr_reg!.passExp : 'N/A' }}</span>
+											</div>
+										</div>
+										<div class="space-y-4">
+											<h4
+												class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+												Residential Address</h4>
+											<div class="text-sm text-slate-800 p-3">
+												{{ curr_reg!.addr }}
+											</div>
+										</div>
+									</div>
+
+									<!-- Footer Decor -->
+									<div class="mt-auto pt-12 border-t border-slate-100 flex justify-between items-end">
+										<div class="text-[10px] text-slate-400 uppercase tracking-widest">
+											Official Registration Document • Ebey's Gold Travels
+										</div>
+										<div class="flex flex-col items-end">
+											<div class="w-32 h-1 bg-amber-400 mb-1"></div>
+											<div class="text-[10px] text-slate-400 uppercase font-bold">Authorized
+												Signature</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Floating Action Button for Download -->
+								<div class="fixed bottom-8 right-8 flex gap-2 no-print">
+									<div class="dropdown dropdown-top dropdown-end">
+										<label tabindex="0"
+											class="btn bg-amber-400 border-black border hover:bg-amber-500 text-black btn-circle shadow-xl">
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+												viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+													d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+											</svg>
+										</label>
+										<ul tabindex="0"
+											class="dropdown-content menu p-2 shadow-2xl bg-neutral text-white rounded-none w-52 mb-4">
+											<li>
+												<button @click="printRegistration" class="flex gap-2">
+													<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+														viewBox="0 0 24 24" stroke="currentColor">
+														<path stroke-linecap="round" stroke-linejoin="round"
+															stroke-width="2"
+															d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+													</svg>
+													Download PDF
+												</button>
+											</li>
+											<li>
+												<div class="flex flex-col gap-2 p-2">
+													<span class="text-xs opacity-50 uppercase font-bold">Update
+														Status</span>
+													<div class="flex gap-2">
+														<button @click="updateRegistrationStatus(curr_reg!, 'new')"
+															class="btn btn-xs bg-yellow-400 border-none text-black flex-1">New</button>
+														<button
+															@click="updateRegistrationStatus(curr_reg!, 'downloaded')"
+															class="btn btn-xs bg-green-400 border-none text-black flex-1">Done</button>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
 						</div>
 					</dialog>
 				</section>
@@ -118,10 +252,17 @@
 					<table class="table w-full">
 						<thead>
 							<tr>
-								<th colspan="4" class="whitespace-normal">
-									<div class="p-2">
+								<th colspan="5" class="whitespace-normal">
+									<div class="flex flex-col sm:flex-row gap-4 p-2 items-start sm:items-center">
 										<input v-model="msgSearch" type="text" placeholder="Search Messages..."
 											class="input input-bordered bg-neutral input-sm w-full max-w-xs rounded-none" />
+										<select v-model="msgStatusFilter"
+											class="select bg-neutral select-bordered select-sm rounded-none w-full sm:w-auto">
+											<option value="">All Statuses</option>
+											<option value="unread">Unread</option>
+											<option value="read">Read</option>
+											<option value="replied">Replied</option>
+										</select>
 									</div>
 								</th>
 							</tr>
@@ -130,32 +271,56 @@
 								<th>Name</th>
 								<th class="hidden sm:table-cell">Email</th>
 								<th>Message</th>
+								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr class="hover:bg-amber-400/50 transition-all duration-300 ease-in-out cursor-pointer"
 								v-for="(msg, i) in filteredMessages" onclick="message1.showModal()"
-								@click="curr_msg = msg">
+								@click="openMessage(msg)">
 								<th class="text-white/20">{{ i + 1 }}</th>
 								<td>{{ msg.fullName }}</td>
 								<td class="hidden sm:table-cell">{{ msg.email }}</td>
 								<td class="truncate h-8 w-40 line-clamp-1">{{ msg.message }}</td>
+								<td>
+									<div class="badge badge-sm font-bold border-none" :class="{
+										'bg-red-500 text-black': !msg.status || msg.status === 'unread',
+										'bg-yellow-400 text-black': msg.status === 'read',
+										'bg-green-500 text-black': msg.status === 'replied'
+									}">
+										{{ msg.status || 'unread' }}
+									</div>
+								</td>
 							</tr>
 						</tbody>
 					</table>
 
 					<dialog id="message1" class="modal z-[100]">
-						<div class="modal-box bg-black/5 rounded-none outline outline-amber-400 backdrop-blur-lg">
+						<div class="modal-box bg-neutral rounded-none outline outline-amber-400 backdrop-blur-lg">
 							<form method="dialog">
 								<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
 							</form>
-							<h3 class="text-lg font-bold flex justify-between">{{ curr_msg!.fullName }}</h3>
-							<p class="py-4 flex flex-col">
-								<span class="font-bold">Email: <span class="font-normal pl-3">{{ curr_msg!.email
-								}}</span></span>
-								<span class="font-bold">Message: <span class="font-normal pl-3">{{ curr_msg!.message
-								}}</span></span>
+							<h3 class="text-lg font-bold flex justify-between border-b border-white/10 pb-2">{{
+								curr_msg!.fullName }}</h3>
+							<p class="py-4 flex flex-col gap-2">
+								<span class="font-bold flex flex-col text-xs text-slate-400 uppercase">Email <span
+										class="font-normal text-sm text-white pt-1">{{ curr_msg!.email }}</span></span>
+								<span class="font-bold flex flex-col text-xs text-slate-400 uppercase">Message <span
+										class="font-normal text-sm text-white pt-1">{{ curr_msg!.message
+										}}</span></span>
 							</p>
+							<div class="divider"></div>
+							<div class="flex flex-col gap-2">
+								<span class="text-xs opacity-50 uppercase font-bold">Status</span>
+								<div class="flex gap-2">
+									<button @click="updateMessageStatus(curr_msg!, 'unread')"
+										class="btn btn-sm bg-red-500 border-none text-white flex-1 hover:bg-red-600">Unread</button>
+									<button @click="updateMessageStatus(curr_msg!, 'read')"
+										class="btn btn-sm bg-yellow-400 border-none text-black flex-1 hover:bg-yellow-500">Read</button>
+									<button @click="updateMessageStatus(curr_msg!, 'replied')"
+										class="btn btn-sm bg-green-500 border-none text-white flex-1 hover:bg-green-600">Replied</button>
+								</div>
+							</div>
 						</div>
 					</dialog>
 				</section>
@@ -259,14 +424,20 @@ const tabList = computed(() => [
 
 // Search and Filter States
 const regSearch = ref('')
+const regStatusFilter = ref('')
 const msgSearch = ref('')
+const msgStatusFilter = ref('')
 const appSearch = ref('')
 const appStatusFilter = ref('')
 
 const filteredRegistrations = computed(() => {
-	if (!regSearch.value) return registrations.value
+	let list = registrations.value
+	if (regStatusFilter.value) {
+		list = list.filter(r => (r.status || 'new') === regStatusFilter.value)
+	}
+	if (!regSearch.value) return list
 	const s = regSearch.value.toLowerCase()
-	return registrations.value.filter(r =>
+	return list.filter(r =>
 		r.firstName.toLowerCase().includes(s) ||
 		r.lastName.toLowerCase().includes(s) ||
 		r.email.toLowerCase().includes(s) ||
@@ -276,9 +447,13 @@ const filteredRegistrations = computed(() => {
 })
 
 const filteredMessages = computed(() => {
-	if (!msgSearch.value) return messages.value
+	let list = messages.value
+	if (msgStatusFilter.value) {
+		list = list.filter(m => (m.status || 'unread') === msgStatusFilter.value)
+	}
+	if (!msgSearch.value) return list
 	const s = msgSearch.value.toLowerCase()
-	return messages.value.filter(m =>
+	return list.filter(m =>
 		m.fullName.toLowerCase().includes(s) ||
 		m.email.toLowerCase().includes(s) ||
 		m.message.toLowerCase().includes(s)
@@ -309,6 +484,38 @@ const updateAppointmentStatus = async (app: Appointment, status: string) => {
 		alert('Failed to update status. Please try again.')
 	}
 }
+
+const updateRegistrationStatus = async (reg: Registration, status: string) => {
+	try {
+		await store.updateRegistrationStatus(reg, status)
+	} catch (error) {
+		alert('Failed to update status. Please try again.')
+	}
+}
+
+const updateMessageStatus = async (msg: Message, status: string) => {
+	try {
+		await store.updateMessageStatus(msg, status)
+	} catch (error) {
+		alert('Failed to update status. Please try again.')
+	}
+}
+
+const openMessage = (msg: Message) => {
+	curr_msg.value = msg
+	if (!msg.status || msg.status === 'unread') {
+		updateMessageStatus(msg, 'read')
+	}
+}
+
+const printRegistration = () => {
+	if (curr_reg.value) {
+		window.print()
+		if (!curr_reg.value.status || curr_reg.value.status === 'new') {
+			updateRegistrationStatus(curr_reg.value, 'downloaded')
+		}
+	}
+}
 const curr_reg = ref<Registration | null>({
 	addr: '',
 	dob: '',
@@ -335,4 +542,44 @@ const curr_msg = ref<Message | null>({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+@media print {
+	.no-print {
+		display: none !important;
+	}
+
+	body * {
+		visibility: hidden;
+	}
+
+	#registration,
+	#registration * {
+		visibility: visible;
+	}
+
+	#registration {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: auto;
+		margin: 0;
+		padding: 0;
+		overflow: visible !important;
+	}
+
+	.modal-box {
+		width: 100% !important;
+		max-width: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		box-shadow: none !important;
+		outline: none !important;
+	}
+
+	.overflow-y-auto {
+		overflow: visible !important;
+		max-height: none !important;
+	}
+}
+</style>

@@ -50,11 +50,47 @@
 				</NuxtLink>
 			</li>
 		</ul>
+		<div class="mt-auto pt-10 px-2">
+			<button @click="handleRefresh" :disabled="loading"
+				class="btn btn-ghost w-full flex justify-start gap-4 rounded-none hover:bg-amber-400 hover:text-black transition-all duration-300 relative group overflow-hidden"
+				:class="{ 'bg-green-500/10 text-green-400': justRefreshed && !loading }">
+				<div class="flex items-center gap-4 z-10 w-full">
+					<svg v-if="!justRefreshed || loading" xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 text-amber-400 shrink-0" :class="{ 'animate-spin': loading }" fill="none"
+						viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+					<svg v-else xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5 text-green-400 shrink-0 animate-bounce" fill="none" viewBox="0 0 24 24"
+						stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+					</svg>
+					<span class="font-bold tracking-wider text-[10px] uppercase truncate">
+						{{ loading ? 'Updating...' : (justRefreshed ? 'Data Updated' : 'Refresh Data') }}
+					</span>
+				</div>
+				<!-- Progress bar background -->
+				<div v-if="loading" class="absolute bottom-0 left-0 h-0.5 bg-amber-400 animate-pulse w-full"></div>
+			</button>
+		</div>
 
 	</div>
 </template>
 
 <script setup lang="ts">
+const store = useAppStore();
+const { loading } = storeToRefs(store);
+const justRefreshed = ref(false);
+
+const handleRefresh = async () => {
+	await store.refreshAllData();
+	justRefreshed.value = true;
+	setTimeout(() => {
+		justRefreshed.value = false;
+	}, 3000);
+};
+
 const closeDrawer = () => {
 	const drawer = document.getElementById('my-drawer') as HTMLInputElement;
 	if (drawer) drawer.checked = false;

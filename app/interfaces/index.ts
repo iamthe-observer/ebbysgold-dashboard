@@ -1,4 +1,5 @@
 export type Registration = {
+  id?: string
   created_at: Date
   firstName: string
   lastName: string
@@ -16,6 +17,7 @@ export type Registration = {
   visaAssist: string
   uniqueID: string
   dob: string
+  status?: 'new' | 'downloaded'
 }
 
 export interface Receipt {
@@ -38,9 +40,11 @@ export interface Receipt {
 }
 
 export type Message = {
+  id?: string
   fullName: string
   email: string
   message: string
+  status?: 'unread' | 'read' | 'replied'
 }
 
 export type Appointment = {

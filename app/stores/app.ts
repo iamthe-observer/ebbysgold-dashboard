@@ -105,14 +105,73 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  const updateRegistrationStatus = async (reg: Registration, status: string) => {
+    try {
+      let query = $supabase.from('wc-registration-egtravels').update({ status })
+      if (reg.id) {
+        query = query.eq('id', reg.id)
+      } else {
+        query = query.eq('uniqueID', reg.uniqueID)
+      }
+      const { error } = await query
+      if (error) throw error
+      const localReg = registrations.value.find((r) =>
+        (reg.id && r.id === reg.id) || (r.uniqueID === reg.uniqueID)
+      )
+      if (localReg) localReg.status = status as any
+    } catch (error) {
+      console.error('Error updating registration status:', error)
+      throw error
+    }
+  }
+
+  const updateMessageStatus = async (msg: Message, status: string) => {
+    try {
+      let query = $supabase.from('messages-egtravels').update({ status })
+      if (msg.id) {
+        query = query.eq('id', msg.id)
+      } else {
+        query = query.eq('email', msg.email).eq('fullName', msg.fullName)
+      }
+      const { error } = await query
+      if (error) throw error
+      const localMsg = messages.value.find((m) =>
+        (msg.id && m.id === msg.id) || (m.email === msg.email && m.fullName === msg.fullName)
+      )
+      if (localMsg) localMsg.status = status as any
+    } catch (error) {
+      console.error('Error updating message status:', error)
+      throw error
+    }
+  }
+
+  const refreshAllData = async () => {
+    loading.value = true
+    try {
+      await Promise.all([
+        getRegistrations(),
+        getMessages(),
+        getAppointments(),
+        getReceipts()
+      ])
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
+    refreshAllData,
     getRegistrations,
     getMessages,
     registrations,
     messages,
     getAppointments,
     appointments,
+    updateRegistrationStatus,
+    updateMessageStatus,
     updateAppointmentStatus,
     getReceipts,
     receipts,
