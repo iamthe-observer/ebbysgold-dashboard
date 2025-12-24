@@ -467,7 +467,7 @@
 				<div class="absolute bottom-8 right-8 z-[100] hidden-on-print">
 					<div class="dropdown dropdown-top dropdown-end">
 						<label tabindex="0"
-							class="btn bg-amber-400 btn-square btn-lg shadow-2xl hover:scale-110 transition-transform">
+							class="btn bg-amber-400 btn-square rounded-none btn-lg shadow-2xl hover:scale-110 transition-transform">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-black" fill="none"
 								viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -479,7 +479,7 @@
 							<li class="menu-title text-xs uppercase opacity-50 mb-1">Receipt Actions</li>
 							<li>
 								<a @click="editSelectedReceipt"
-									class="flex gap-3 items-center py-3 hover:bg-primary hover:text-black">
+									class="rounded-none flex gap-3 items-center py-3 hover:bg-amber-400 hover:text-black">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
 										viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -489,7 +489,7 @@
 								</a>
 							</li>
 							<li>
-								<a @click="printSelectedReceipt" class="flex gap-3 items-center py-3">
+								<a @click="printSelectedReceipt" class="rounded-none flex gap-3 items-center py-3">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
 										viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -501,7 +501,7 @@
 							<div class="divider my-1 opacity-20"></div>
 							<li>
 								<a @click="deleteSelectedReceipt"
-									class="flex gap-3 items-center py-3 text-error hover:bg-error hover:text-white">
+									class="rounded-none flex gap-3 items-center py-3 text-error hover:bg-error hover:text-white">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
 										viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -523,14 +523,19 @@
 
 <script lang="ts" setup>
 import { reactive, computed, ref, onMounted, watch } from 'vue';
+import type { Receipt } from "~/interfaces/index";
+import { storeToRefs } from 'pinia';
+
+const { $supabase } = useNuxtApp();
+const store = useAppStore();
+const { receipts: savedReceipts } = storeToRefs(store);
 
 const formatDateForInput = (date: Date) => {
 	return date.toISOString().split('T')[0];
 };
 
 const activeTab = ref('view');
-const savedReceipts = ref<any[]>([]);
-const selectedReceipt = ref<any>(null);
+const selectedReceipt = ref<Receipt>();
 const receiptSearch = ref('');
 
 const filteredSavedReceipts = computed(() => {
@@ -569,12 +574,23 @@ const editSelectedReceipt = () => {
 	}
 };
 
-const deleteSelectedReceipt = () => {
-	if (selectedReceipt.value) {
-		const index = savedReceipts.value.findIndex(r => r.number === selectedReceipt.value.number);
-		if (index !== -1) {
-			deleteReceipt(index);
-			closeReceiptModal();
+const deleteSelectedReceipt = async () => {
+	if (selectedReceipt.value && selectedReceipt.value.id) {
+		if (confirm('Are you sure you want to delete this receipt?')) {
+			try {
+				const { error } = await $supabase
+					.from('receipts-egtravels')
+					.delete()
+					.eq('id', selectedReceipt.value.id);
+
+				if (error) throw error;
+
+				await store.getReceipts();
+				closeReceiptModal();
+			} catch (error) {
+				console.error('Error deleting receipt:', error);
+				alert('Failed to delete receipt.');
+			}
 		}
 	}
 };
@@ -597,13 +613,15 @@ const createDefaultReceipt = () => {
 	if (savedReceipts.value.length > 0) {
 		const nums = savedReceipts.value.map(r => {
 			const m = r.number && typeof r.number === 'string' ? r.number.match(/#(\d+)/) : null;
-			return m ? parseInt(m[1]) : 0;
+			return m ? parseInt(m[1]!) : 0;
 		});
 		const max = Math.max(...nums, 0);
 		nextNum = max + 1;
 	}
 
 	return {
+		id: undefined,
+		created_at: undefined,
 		companyName: 'Ebbysgold Travels',
 		companyAddress: 'Plot 158, Spintex Road, Accra',
 		companyPhone: '+233 53 780 4885',
@@ -682,46 +700,42 @@ const createNew = () => {
 	activeTab.value = 'create';
 };
 
-// Persistence Logic
-const STORAGE_KEY = 'ebbysgold_receipts';
-
-const loadFromStorage = () => {
-	if (typeof localStorage !== 'undefined') {
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) {
-			try {
-				savedReceipts.value = JSON.parse(stored);
-			} catch (e) {
-				console.error('Failed to parse receipts', e);
-			}
-		}
-	}
-};
-
-const saveToStorage = () => {
-	if (typeof localStorage !== 'undefined') {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReceipts.value));
-	}
-};
-
-const saveAndPrint = () => {
+const saveAndPrint = async () => {
 	// 1. Save Logic
-	const index = savedReceipts.value.findIndex(r => r.number === receipt.number);
 	const receiptData = JSON.parse(JSON.stringify(receipt)); // Deep copy
 
-	if (index >= 0) {
-		savedReceipts.value[index] = receiptData;
-	} else {
-		savedReceipts.value.unshift(receiptData);
+	// Remove id if it's not present to let Supabase generate it
+	if (receiptData.id === undefined || receiptData.id === null || receiptData.id === '') {
+		delete receiptData.id;
 	}
-	saveToStorage();
 
-	// 2. Print Logic
-	// Small delay to ensure state update if any? Not strictly needed for Vue reactive, but good for UI feedback if we had any.
-	// Since we removed the alert, it just saves and pops print dialog.
-	setTimeout(() => {
-		window.print();
-	}, 100);
+	// Remove created_at as it's typically managed by Supabase
+	delete receiptData.created_at;
+
+	try {
+		const { data, error } = await $supabase
+			.from('receipts-egtravels')
+			.upsert(receiptData)
+			.select()
+			.single();
+
+		if (error) throw error;
+
+		// Update local receipt state with saved data (including generated ID)
+		if (data) {
+			Object.assign(receipt, data);
+		}
+
+		await store.getReceipts();
+
+		// 2. Print Logic
+		setTimeout(() => {
+			window.print();
+		}, 100);
+	} catch (error: any) {
+		console.error('Error saving receipt:', error);
+		alert('Failed to save receipt: ' + (error.message || 'Unknown error'));
+	}
 };
 
 const loadReceipt = (saved: any) => {
@@ -729,15 +743,28 @@ const loadReceipt = (saved: any) => {
 	activeTab.value = 'create';
 };
 
-const deleteReceipt = (index: number) => {
-	if (confirm('Are you sure you want to delete this receipt?')) {
-		savedReceipts.value.splice(index, 1);
-		saveToStorage();
+const deleteReceipt = async (index: number) => {
+	const r = savedReceipts.value[index];
+	if (r && r.id) {
+		if (confirm('Are you sure you want to delete this receipt?')) {
+			try {
+				const { error } = await $supabase
+					.from('receipts-egtravels')
+					.delete()
+					.eq('id', r.id);
+
+				if (error) throw error;
+				await store.getReceipts();
+			} catch (error) {
+				console.error('Error deleting receipt:', error);
+				alert('Failed to delete receipt.');
+			}
+		}
 	}
 };
 
-onMounted(() => {
-	loadFromStorage();
+onMounted(async () => {
+	await store.getReceipts();
 });
 
 useHead({

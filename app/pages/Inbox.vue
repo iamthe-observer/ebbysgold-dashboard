@@ -194,7 +194,7 @@
 								<td>{{ formatDateTime(app.date) }}</td>
 								<td>
 									<select :value="app.status || 'pending'"
-										@change="updateAppointmentStatus(app.id!, ($event.target as HTMLSelectElement).value)"
+										@change="updateAppointmentStatus(app, ($event.target as HTMLSelectElement).value)"
 										class="select select-ghost select-xs rounded-none" :class="{
 											'text-warning': !app.status || app.status === 'pending',
 											'text-success': app.status === 'attended' || app.status === 'accepted',
@@ -220,7 +220,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import type { Registration, Message } from '~/interfaces/index'
+import type { Registration, Message, Appointment } from '~/interfaces/index'
 
 useHead({
 	title: 'Inbox | Ebbys Gold'
@@ -285,21 +285,11 @@ const filteredAppointments = computed(() => {
 	)
 })
 
-const updateAppointmentStatus = async (id: string, status: string) => {
+const store = useAppStore()
+const updateAppointmentStatus = async (app: Appointment, status: string) => {
 	try {
-		const { error } = await $supabase
-			.from('appointment-egtravels')
-			.update({ status })
-			.eq('id', id)
-
-		if (error) throw error
-
-		// Optimistically update local state or re-fetch
-		const app = appointments.value.find(a => a.id === id)
-		if (app) app.status = status
-
+		await store.updateAppointmentStatus(app, status)
 	} catch (error) {
-		console.error('Error updating status:', error)
 		alert('Failed to update status. Please try again.')
 	}
 }
