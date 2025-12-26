@@ -12,7 +12,7 @@
 
 		<!-- Login Card -->
 		<div
-			class="card w-full max-w-md bg-black/60 backdrop-blur-2xl border border-amber-400/40 p-10 shadow-[0_0_50px_rgba(245,158,11,0.1)] relative z-10 mx-4">
+			class="card w-full max-w-md bg-black/60 backdrop-blur-2xl border border-amber-400/40 p-10 shadow-[0_0_50px_rgba(245,158,11,0.1)] relative z-10">
 			<div class="flex flex-col items-center mb-8">
 				<div class="relative mb-6 group">
 					<NuxtImg src="/logo.png" class="w-48 object-contain relative z-10 transition-transform duration-500"
@@ -31,7 +31,7 @@
 						Email Address
 					</label>
 					<input v-model="email" type="email" required
-						class="input input-bordered w-full bg-black/50 border-amber-400/30 focus:border-amber-400 focus:bg-black transition-all duration-500 text-white placeholder:text-slate-700"
+						class="input input-bordered w-full bg-black/50 border-amber-400/30 focus:border-amber-400 focus:bg-black transition-all duration-500 text-white placeholder:text-white/30"
 						placeholder="admin@ebbysgold.com" />
 				</div>
 
@@ -40,7 +40,7 @@
 						Password
 					</label>
 					<input v-model="password" type="password" required
-						class="input input-bordered w-full bg-black/50 border-amber-400/30 focus:border-amber-400 focus:bg-black transition-all duration-500 text-white placeholder:text-slate-700"
+						class="input input-bordered w-full bg-black/50 border-amber-400/30 focus:border-amber-400 focus:bg-black transition-all duration-500 text-white placeholder:text-white/30"
 						placeholder="••••••••" />
 				</div>
 
