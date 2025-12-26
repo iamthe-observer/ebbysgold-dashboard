@@ -41,6 +41,7 @@ export interface Receipt {
 
 export type Message = {
   id?: string
+  created_at: string
   fullName: string
   email: string
   message: string
@@ -218,4 +219,13 @@ export interface Profile {
   created_at: string
   meta_data: {}
   email: string
+}
+
+export interface Notification {
+  id: string
+  title: string
+  message: string
+  type: 'registration' | 'message' | 'appointment'
+  created_at: string
+  isRead: boolean
 }

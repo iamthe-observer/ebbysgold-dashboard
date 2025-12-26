@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Registration, Message, Appointment, Receipt } from '~/interfaces/index'
+import type { Registration, Message, Appointment, Receipt, Notification } from '~/interfaces/index'
 import type { Profile } from '~/interfaces/index'
 
 export const useAppStore = defineStore('app', () => {
@@ -10,6 +10,54 @@ export const useAppStore = defineStore('app', () => {
   const messages = ref<Message[]>([])
   const receipts = ref<Receipt[]>([])
   const profile = ref<Profile>()
+  const activeTab = ref('registrations')
+
+  // Persistence for notifications using Nuxt cookies
+  const notificationsCookie = useCookie<Notification[]>('dashboard_notifications', { default: () => [] })
+  const notifications = ref<Notification[]>(notificationsCookie.value || [])
+  const toasts = ref<Notification[]>([])
+
+  // Sync ref with cookie
+  watch(notifications, (newVal) => {
+    notificationsCookie.value = newVal
+  }, { deep: true })
+
+  const addNotification = (notif: Notification) => {
+    // Only add if not already present
+    if (!notifications.value.find(n => n.id === notif.id)) {
+      notifications.value.unshift(notif)
+
+      // Limit toasts to prevent overwhelming the screen on launch
+      if (toasts.value.length < 5) {
+        toasts.value.push(notif)
+        setTimeout(() => {
+          toasts.value = toasts.value.filter(t => t.id !== notif.id)
+        }, 10000)
+      }
+    }
+  }
+
+  const removeNotification = (id: string) => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }
+
+  const clearNotifications = () => {
+    notifications.value = []
+  }
+
+  const navigateToNotif = (notif: Notification) => {
+    if (notif.type === 'registration') {
+      activeTab.value = 'registrations'
+      navigateTo('/inbox')
+    } else if (notif.type === 'message') {
+      activeTab.value = 'messages'
+      navigateTo('/inbox')
+    } else if (notif.type === 'appointment') {
+      activeTab.value = 'appointments'
+      navigateTo('/inbox')
+    }
+    removeNotification(notif.id)
+  }
 
   const getProfile = async () => {
     try {
@@ -41,12 +89,26 @@ export const useAppStore = defineStore('app', () => {
       const { data, error } = await $supabase
         .from('wc-registration-egtravels')
         .select('*')
+        .order('created_at', { ascending: false })
 
       if (error) {
         throw error
       }
       registrations.value = data
-      console.log(registrations.value)
+
+      // Check for new registrations to notify
+      data.forEach((reg: Registration) => {
+        if (!reg.status || reg.status === 'new') {
+          addNotification({
+            id: `reg-${reg.id || reg.uniqueID}`,
+            title: 'New Registration',
+            message: `${reg.firstName} ${reg.lastName} registered for ${reg.package}`,
+            type: 'registration',
+            created_at: String(reg.created_at),
+            isRead: false
+          })
+        }
+      })
     } catch (error) {
       console.error(error)
     }
@@ -57,12 +119,26 @@ export const useAppStore = defineStore('app', () => {
       const { data, error } = await $supabase
         .from('messages-egtravels')
         .select('*')
+        .order('created_at', { ascending: false })
 
       if (error) {
         throw error
       }
       messages.value = data
-      console.log(messages.value)
+
+      // Check for unread messages
+      data.forEach((msg: Message) => {
+        if (!msg.status || msg.status === 'unread') {
+          addNotification({
+            id: `msg-${msg.id || msg.email + msg.fullName}`,
+            title: 'New Message',
+            message: `From ${msg.fullName}: ${msg.message.substring(0, 30)}...`,
+            type: 'message',
+            created_at: String(msg.created_at),
+            isRead: false
+          })
+        }
+      })
     } catch (error) {
       console.error(error)
     }
@@ -73,12 +149,26 @@ export const useAppStore = defineStore('app', () => {
       const { data, error } = await $supabase
         .from('appointment-egtravels')
         .select('*')
+        .order('created_at', { ascending: false })
 
       if (error) {
         throw error
       }
       appointments.value = data
-      console.log(appointments.value)
+
+      // Check for pending appointments
+      data.forEach((app: Appointment) => {
+        if (!app.status || app.status === 'pending') {
+          addNotification({
+            id: `app-${app.id || app.email + app.phone}`,
+            title: 'New Appointment',
+            message: `Request from ${app.fullName}`,
+            type: 'appointment',
+            created_at: String(app.created_at),
+            isRead: false
+          })
+        }
+      })
     } catch (error) {
       console.error(error)
     }
@@ -92,7 +182,6 @@ export const useAppStore = defineStore('app', () => {
       if (app.id) {
         query = query.eq('id', app.id)
       } else {
-        // Fallback to phone and email if id is missing
         query = query.eq('phone', app.phone).eq('email', app.email)
       }
 
@@ -102,8 +191,6 @@ export const useAppStore = defineStore('app', () => {
         console.error('Supabase update error:', error)
         throw error
       }
-
-      console.log('Update result:', data)
 
       const localApp = appointments.value.find((a) =>
         (app.id && a.id === app.id) || (a.phone === app.phone && a.email === app.email)
@@ -126,7 +213,6 @@ export const useAppStore = defineStore('app', () => {
         throw error
       }
       receipts.value = data
-      console.log(receipts.value)
     } catch (error) {
       console.error(error)
     }
@@ -196,6 +282,16 @@ export const useAppStore = defineStore('app', () => {
     profile,
     isAdmin,
     isStaff,
+    notifications,
+    toasts,
+    activeTab,
+    unreadCount: computed(() => notifications.value.filter(n => !n.isRead).length),
+    clearNotifications,
+    removeNotification,
+    markAllAsRead: () => {
+      notifications.value = notifications.value.map(n => ({ ...n, isRead: true }))
+    },
+    navigateToNotif,
     refreshAllData,
     getRegistrations,
     getMessages,

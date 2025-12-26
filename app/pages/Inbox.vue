@@ -418,9 +418,8 @@ function formatDateTime(date: string) {
 	return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
-const { registrations, messages, appointments, isAdmin, isStaff, profile } = storeToRefs(useAppStore())
+const { registrations, messages, appointments, isAdmin, isStaff, profile, activeTab } = storeToRefs(useAppStore())
 const { $supabase } = useNuxtApp()
-const activeTab = ref('registrations')
 
 const tabList = computed(() => [
 	{ id: 'registrations', label: 'REGISTRATIONS', count: registrations.value.length },
@@ -544,7 +543,8 @@ const curr_reg = ref<Registration | null>({
 const curr_msg = ref<Message | null>({
 	fullName: '',
 	email: '',
-	message: ''
+	message: '',
+	created_at: new Date().toISOString()
 })
 </script>
 

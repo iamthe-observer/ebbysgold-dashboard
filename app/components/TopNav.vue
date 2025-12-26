@@ -16,15 +16,46 @@
       <!-- <div class="form-control hidden sm:block">
         <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto rounded-none bg-neutral" />
       </div> -->
-      <button class="btn btn-ghost btn-circle">
-        <div class="indicator">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-          <span class="badge badge-xs badge-warning indicator-item"></span>
+      <div class="dropdown dropdown-end" @focusin="markAllAsRead">
+        <label tabindex="0" class="btn btn-ghost btn-circle">
+          <div class="indicator">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span v-if="unreadCount > 0"
+              class="badge badge-sm badge-warning indicator-item border-none text-[10px] font-bold p-1">{{
+                unreadCount }}</span>
+          </div>
+        </label>
+        <div tabindex="0"
+          class="dropdown-content z-[2] card card-compact w-72 md:w-80 p-2 shadow bg-black outline outline-amber-400 rounded-none mt-4 text-white">
+          <div class="card-body">
+            <h3 class="font-bold text-lg border-b border-white/10 pb-2">Notifications</h3>
+            <div class="max-h-96 overflow-y-auto no-scrollbar flex flex-col gap-2 pt-2">
+              <div v-if="notifications.length === 0" class="text-center py-4 opacity-50 text-sm italic">No new
+                notifications</div>
+              <div v-for="notif in notifications" :key="notif.id" @click="navigateToNotif(notif)"
+                class="p-3 bg-neutral hover:bg-neutral/80 transition-colors border-l-4 border-amber-400 cursor-pointer relative group"
+                :class="{ 'opacity-60 grayscale-[0.5]': notif.isRead }">
+                <button @click.stop="removeNotification(notif.id)"
+                  class="btn btn-ghost btn-xs btn-circle absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                <div class="flex justify-between items-start mb-1 pr-6">
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">{{ notif.type }}</span>
+                  <span class="text-[9px] opacity-40">{{ new Date(notif.created_at).toLocaleDateString() }}</span>
+                </div>
+                <h4 class="font-bold text-sm leading-tight mb-1">{{ notif.title }}</h4>
+                <p class="text-xs opacity-70 line-clamp-2">{{ notif.message }}</p>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-white/10 mt-2">
+              <button @click="clearNotifications" class="btn btn-ghost btn-xs w-full text-error hover:bg-error/10">Clear
+                All</button>
+            </div>
+          </div>
         </div>
-      </button>
+      </div>
       <div class="dropdown dropdown-end">
         <label tabindex="0" class="btn btn-ghost btn-circle avatar">
           <div class="w-10 rounded-none">
@@ -52,7 +83,9 @@ import { storeToRefs } from 'pinia'
 const route = useRoute()
 const { $supabase } = useNuxtApp()
 
-const { profile } = storeToRefs(useAppStore())
+const store = useAppStore()
+const { profile, notifications, unreadCount } = storeToRefs(store)
+const { clearNotifications, navigateToNotif, removeNotification, markAllAsRead } = store
 
 const pageTitle = computed(() => {
   if (route.path === '/') {
