@@ -9,7 +9,7 @@
       </label>
     </div>
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl lg:hidden">EbbysGold</a>
+      <a class="btn btn-ghost text-xl lg:hidden">{{ pageTitle }}</a>
       <h2 class="text-xl font-black hidden uppercase lg:block px-4 tracking-tighter">{{ pageTitle }}</h2>
     </div>
     <div class="flex pr-4 md:pr-8 gap-2">

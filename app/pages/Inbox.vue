@@ -190,7 +190,7 @@
 									<!-- Footer Decor -->
 									<div class="mt-auto pt-12 border-t border-slate-100 flex justify-between items-end">
 										<div class="text-[10px] text-slate-400 uppercase tracking-widest">
-											Official Registration Document • Ebey's Gold Travels
+											Official Registration Document • Ebbysgold Travels
 										</div>
 										<div class="flex flex-col items-end">
 											<div class="w-32 h-1 bg-amber-400 mb-1"></div>
