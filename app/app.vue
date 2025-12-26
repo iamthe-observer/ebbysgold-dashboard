@@ -50,17 +50,43 @@ const { loading, toasts } = storeToRefs(useAppStore())
 
 onMounted(async () => {
   const { $supabase } = useNuxtApp()
-  const { data: { session } } = await $supabase.auth.getSession()
+  const store = useAppStore()
 
-  if (session) {
-    useAppStore().$patch({ loading: true })
-    await useAppStore().getProfile()
-    await useAppStore().getRegistrations()
-    await useAppStore().getMessages()
-    await useAppStore().getAppointments()
-    await useAppStore().getReceipts()
-  }
+  // Listen for auth state changes
+  $supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth event:', event)
 
-  useAppStore().$patch({ loading: false })
+    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+      if (session) {
+        store.$patch({ loading: true })
+        try {
+          await Promise.all([
+            store.getProfile(),
+            store.getRegistrations(),
+            store.getMessages(),
+            store.getAppointments(),
+            store.getReceipts()
+          ])
+        } catch (error) {
+          console.error('Error loading data:', error)
+        } finally {
+          store.$patch({ loading: false })
+        }
+      } else {
+        // No session on initial load or sign in attempt
+        store.$patch({ loading: false })
+      }
+    } else if (event === 'SIGNED_OUT') {
+      // Clear data on sign out and stop loading
+      store.$patch({
+        loading: false,
+        profile: undefined,
+        registrations: [],
+        messages: [],
+        appointments: [],
+        receipts: []
+      })
+    }
+  })
 })
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="drawer h-screen bg-neutral lg:drawer-open">
     <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content flex flex-col bg-neutral relative">
+    <div class="drawer-content flex flex-col bg-neutral relative overflow-y-auto">
       <!-- Navbar -->
       <TopNav />
       <!-- Page Content -->
