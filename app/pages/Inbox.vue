@@ -225,7 +225,7 @@
 												</button>
 											</li>
 											<li>
-												<div class="flex flex-col gap-2 p-2">
+												<div v-if="isStaff" class="flex flex-col gap-2 p-2">
 													<span class="text-xs opacity-50 uppercase font-bold">Update
 														Status</span>
 													<div class="flex gap-2">
@@ -233,7 +233,7 @@
 															class="btn btn-xs bg-yellow-400 border-none text-black flex-1">New</button>
 														<button
 															@click="updateRegistrationStatus(curr_reg!, 'downloaded')"
-															class="btn btn-xs bg-green-400 border-none text-black flex-1">Done</button>
+															class="btn btn-xs bg-green-400 border-none text-black flex-1">Downloaded</button>
 													</div>
 												</div>
 											</li>
@@ -242,6 +242,9 @@
 								</div>
 							</div>
 						</div>
+						<form method="dialog" class="modal-backdrop">
+							<button>close</button>
+						</form>
 					</dialog>
 				</section>
 			</div>
@@ -310,7 +313,7 @@
 										}}</span></span>
 							</p>
 							<div class="divider"></div>
-							<div class="flex flex-col gap-2">
+							<div v-if="isAdmin || (isStaff && curr_msg?.status === 'read')" class="flex flex-col gap-2">
 								<span class="text-xs opacity-50 uppercase font-bold">Status</span>
 								<div class="flex gap-2">
 									<button @click="updateMessageStatus(curr_msg!, 'unread')"
@@ -322,6 +325,9 @@
 								</div>
 							</div>
 						</div>
+						<form method="dialog" class="modal-backdrop">
+							<button>close</button>
+						</form>
 					</dialog>
 				</section>
 			</div>
@@ -370,7 +376,7 @@
 									<select :value="app.status || 'pending'"
 										@change="updateAppointmentStatus(app, ($event.target as HTMLSelectElement).value)"
 										class="select select-bordered select-xs rounded-none w-full sm:w-auto font-bold"
-										:class="{
+										:disabled="!isAdmin" :class="{
 											'text-[#FBBF24]': !app.status || app.status === 'pending',
 											'text-[#4ADE80]': app.status === 'accepted',
 											'text-[#60A5FA]': app.status === 'attended',
@@ -398,7 +404,7 @@ import { storeToRefs } from 'pinia'
 import type { Registration, Message, Appointment } from '~/interfaces/index'
 
 useHead({
-	title: 'Inbox | Ebbys Gold'
+	title: 'Inbox | Ebbygold Travels'
 })
 
 function formatDateTime(date: string) {
@@ -412,7 +418,7 @@ function formatDateTime(date: string) {
 	return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
-const { registrations, messages, appointments } = storeToRefs(useAppStore())
+const { registrations, messages, appointments, isAdmin, isStaff, profile } = storeToRefs(useAppStore())
 const { $supabase } = useNuxtApp()
 const activeTab = ref('registrations')
 

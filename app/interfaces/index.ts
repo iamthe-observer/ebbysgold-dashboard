@@ -209,3 +209,13 @@ export interface Review {
   reviewer: string
   content: string
 }
+
+
+export interface Profile {
+  id: string
+  username: string
+  role: boolean
+  created_at: string
+  meta_data: {}
+  email: string
+}

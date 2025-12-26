@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Registration, Message, Appointment, Receipt } from '~/interfaces/index'
+import type { Profile } from '~/interfaces/index'
 
 export const useAppStore = defineStore('app', () => {
   const { $supabase } = useNuxtApp()
@@ -8,6 +9,32 @@ export const useAppStore = defineStore('app', () => {
   const appointments = ref<Appointment[]>([])
   const messages = ref<Message[]>([])
   const receipts = ref<Receipt[]>([])
+  const profile = ref<Profile>()
+
+  const getProfile = async () => {
+    try {
+      const { data: { user } } = await $supabase.auth.getUser()
+
+      if (!user) {
+        console.warn('No active user session')
+        return
+      }
+
+      const { data, error } = await $supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', user.email)
+        .single()
+
+      if (error) {
+        throw error
+      }
+      profile.value = data
+      console.log(profile.value)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   const getRegistrations = async () => {
     try {
@@ -161,19 +188,26 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  const isAdmin = computed(() => profile.value?.role === true)
+  const isStaff = computed(() => profile.value?.role === true || profile.value?.role === false)
+
   return {
     loading,
+    profile,
+    isAdmin,
+    isStaff,
     refreshAllData,
     getRegistrations,
     getMessages,
+    getAppointments,
+    getReceipts,
+    getProfile,
     registrations,
     messages,
-    getAppointments,
     appointments,
+    receipts,
     updateRegistrationStatus,
     updateMessageStatus,
     updateAppointmentStatus,
-    getReceipts,
-    receipts,
   }
 })

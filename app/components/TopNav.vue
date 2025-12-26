@@ -10,7 +10,7 @@
     </div>
     <div class="flex-1">
       <a class="btn btn-ghost text-xl lg:hidden">EbbysGold</a>
-      <h2 class="text-xl font-semibold hidden uppercase lg:block px-4">Dashboard</h2>
+      <h2 class="text-xl font-black hidden uppercase lg:block px-4 tracking-tighter">{{ pageTitle }}</h2>
     </div>
     <div class="flex pr-4 md:pr-8 gap-2">
       <!-- <div class="form-control hidden sm:block">
@@ -40,9 +40,31 @@
         </label>
         <ul tabindex="0"
           class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-black outline outline-amber-400 rounded-none w-52">
-          <li><a>Logout</a></li>
+          <li><a @click="handleLogout">Logout</a></li>
         </ul>
       </div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+const route = useRoute()
+const { $supabase } = useNuxtApp()
+
+const { profile } = storeToRefs(useAppStore())
+
+const pageTitle = computed(() => {
+  if (route.path === '/') {
+    const username = profile.value?.username || 'Admin'
+    return `Hello ${username}`
+  }
+  const path = route.path?.substring(1).split('/')[0] || 'DASHBOARD'
+  return path.toUpperCase()
+})
+
+const handleLogout = async () => {
+  await $supabase.auth.signOut()
+  navigateTo('/login')
+}
+</script>

@@ -29,7 +29,7 @@
 						</button>
 						<h2 class="text-2xl font-bold">New Receipt</h2>
 					</div>
-					<div class="flex gap-2">
+					<div v-if="isStaff" class="flex gap-2">
 						<button @click="saveAndPrint"
 							class="btn bg-amber-400 hover:bg-amber-500 text-black btn-sm gap-2 rounded-none">
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -489,7 +489,7 @@
 						<ul tabindex="0"
 							class="dropdown-content menu p-3 shadow-2xl bg-neutral text-white rounded-none w-56 mb-4 border border-base-300">
 							<li class="menu-title text-xs uppercase opacity-50 mb-1">Receipt Actions</li>
-							<li>
+							<li v-if="isAdmin">
 								<a @click="editSelectedReceipt"
 									class="rounded-none flex gap-3 items-center py-3 hover:bg-amber-400 hover:text-black">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
@@ -511,7 +511,7 @@
 								</a>
 							</li>
 							<div class="divider my-1 opacity-20"></div>
-							<li>
+							<li v-if="isAdmin">
 								<a @click="deleteSelectedReceipt"
 									class="rounded-none flex gap-3 items-center py-3 text-error hover:bg-error hover:text-white">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
@@ -540,7 +540,7 @@ import { storeToRefs } from 'pinia';
 
 const { $supabase } = useNuxtApp();
 const store = useAppStore();
-const { receipts: savedReceipts } = storeToRefs(store);
+const { receipts: savedReceipts, isAdmin, isStaff } = storeToRefs(store);
 
 const formatDateForInput = (date: Date) => {
 	return date.toISOString().split('T')[0];
@@ -781,7 +781,7 @@ onMounted(async () => {
 });
 
 useHead({
-	title: 'Receipt | Ebbys Gold'
+	title: 'Receipt | Ebbygold Travels'
 })
 
 const handleCardMouseMove = (e: MouseEvent) => {

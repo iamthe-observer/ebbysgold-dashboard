@@ -50,7 +50,7 @@
 				</NuxtLink>
 			</li>
 		</ul>
-		<div class="mt-auto pt-10 px-2">
+		<div class="mt-auto pt-10 px-2 flex flex-col gap-2">
 			<button @click="handleRefresh" :disabled="loading"
 				class="btn btn-ghost w-full flex justify-start gap-4 rounded-none hover:bg-amber-400 hover:text-black transition-all duration-300 relative group overflow-hidden"
 				:class="{ 'bg-green-500/10 text-green-400': justRefreshed && !loading }">
@@ -73,6 +73,17 @@
 				<!-- Progress bar background -->
 				<div v-if="loading" class="absolute bottom-0 left-0 h-0.5 bg-amber-400 animate-pulse w-full"></div>
 			</button>
+
+			<button @click="handleLogout"
+				class="btn btn-ghost w-full flex justify-start gap-4 rounded-none hover:bg-red-500 hover:text-white transition-all duration-300 group">
+				<svg xmlns="http://www.w3.org/2000/svg"
+					class="h-5 w-5 text-red-500 group-hover:text-white transition-colors" fill="none"
+					viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+						d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+				</svg>
+				<span class="font-bold tracking-wider text-[10px] uppercase">Sign Out</span>
+			</button>
 		</div>
 
 	</div>
@@ -89,6 +100,12 @@ const handleRefresh = async () => {
 	setTimeout(() => {
 		justRefreshed.value = false;
 	}, 3000);
+};
+
+const handleLogout = async () => {
+	const { $supabase } = useNuxtApp()
+	await $supabase.auth.signOut()
+	navigateTo('/login')
 };
 
 const closeDrawer = () => {

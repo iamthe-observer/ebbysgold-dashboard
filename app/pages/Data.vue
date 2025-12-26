@@ -6,15 +6,17 @@
 			<div class="p-4 border-b border-base-300 hidden lg:block">
 				<h2 class="font-bold text-lg">Content Manager</h2>
 			</div>
-			<ul class="menu p-2 flex-grow flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto w-full no-scrollbar flex-nowrap">
+			<ul
+				class="menu p-2 flex-grow flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto w-full no-scrollbar flex-nowrap">
 				<li v-for="section in sections" :key="section.id" class="flex-shrink-0">
-					<a :class="{ 'active': activeSection === section.id }" @click="activeSection = section.id" class="whitespace-nowrap px-4 py-2">
+					<a :class="{ 'active': activeSection === section.id }" @click="activeSection = section.id"
+						class="whitespace-nowrap px-4 py-2">
 						{{ section.label }}
 					</a>
 				</li>
 			</ul>
 			<div class="p-4 border-t border-base-300 lg:block hidden">
-				<button class="btn btn-primary w-full" @click="saveData" :disabled="loading">
+				<button class="btn btn-primary w-full" @click="saveData" :disabled="loading || !isAdmin">
 					<span v-if="loading" class="loading loading-spinner"></span>
 					{{ loading ? 'Saving...' : 'Save Changes' }}
 				</button>
@@ -71,7 +73,7 @@
 
 					<div v-for="(reason, index) in formData.why_choose_us.reasons" :key="index"
 						class="card bg-base-200 border border-base-300 p-4 mb-4 relative group">
-						<button @click="removeArrayItem(formData.why_choose_us.reasons, index)"
+						<button v-if="isAdmin" @click="removeArrayItem(formData.why_choose_us.reasons, index)"
 							class="btn btn-circle btn-xs btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
 						<div class="form-control mb-2">
 							<label class="label"><span class="label-text">Title</span></label>
@@ -83,7 +85,8 @@
 								class="textarea textarea-bordered textarea-sm"></textarea>
 						</div>
 					</div>
-					<button @click="addReason" class="btn btn-outline btn-sm w-full">+ Add Reason</button>
+					<button v-if="isAdmin" @click="addReason" class="btn btn-outline btn-sm w-full">+ Add
+						Reason</button>
 				</div>
 
 				<!-- Services -->
@@ -98,7 +101,7 @@
 
 					<div v-for="(service, index) in formData.services.list" :key="index"
 						class="card bg-base-200 border border-base-300 p-4 mb-6 relative">
-						<div class="absolute top-4 right-4 z-10">
+						<div v-if="isAdmin" class="absolute top-4 right-4 z-10">
 							<button @click="removeArrayItem(formData.services.list, index)"
 								class="btn btn-sm btn-error">Remove</button>
 						</div>
@@ -135,7 +138,8 @@
 							</div>
 						</div>
 					</div>
-					<button @click="addService" class="btn btn-outline btn-sm w-full">+ Add Service</button>
+					<button v-if="isAdmin" @click="addService" class="btn btn-outline btn-sm w-full">+ Add
+						Service</button>
 				</div>
 
 				<!-- Start Journey -->
@@ -237,16 +241,17 @@
 
 							<div class="divider">Highlights</div>
 							<div v-for="(hl, hIdx) in formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights"
-								:key="hIdx" class="flex flex-col md:flex-row gap-2 mb-4 md:mb-2 bg-base-100 p-2 md:p-0 rounded border md:border-none border-base-300">
+								:key="hIdx"
+								class="flex flex-col md:flex-row gap-2 mb-4 md:mb-2 bg-base-100 p-2 md:p-0 rounded border md:border-none border-base-300">
 								<input v-model="hl.title" placeholder="Title"
 									class="input input-bordered input-sm flex-1" />
 								<input v-model="hl.description" placeholder="Description"
 									class="input input-bordered input-sm flex-1" />
-								<button
+								<button v-if="isAdmin"
 									@click="removeArrayItem(formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights, hIdx)"
 									class="btn btn-square btn-sm btn-ghost text-error self-end">✕</button>
 							</div>
-							<button
+							<button v-if="isAdmin"
 								@click="addHighlight(formData.top_destinations.destinations[destKey as keyof typeof formData.top_destinations.destinations].highlights)"
 								class="btn btn-xs btn-outline">+ Add Highlight</button>
 						</div>
@@ -263,7 +268,7 @@
 
 					<div v-for="(review, index) in formData.reviews.list" :key="index"
 						class="card bg-base-200 border border-base-300 p-4 mb-4 relative">
-						<div class="absolute top-4 right-4">
+						<div v-if="isAdmin" class="absolute top-4 right-4">
 							<button @click="removeArrayItem(formData.reviews.list, index)"
 								class="btn btn-sm btn-error">Remove</button>
 						</div>
@@ -285,14 +290,15 @@
 							</div>
 						</div>
 					</div>
-					<button @click="addReview" class="btn btn-outline btn-sm w-full">+ Add Review</button>
+					<button v-if="isAdmin" @click="addReview" class="btn btn-outline btn-sm w-full">+ Add
+						Review</button>
 				</div>
 
 			</div>
 		</div>
 
 		<!-- Mobile Save Button (FAB style or fixed bottom) -->
-		<div class="lg:hidden fixed bottom-6 right-6 z-50">
+		<div v-if="isAdmin" class="lg:hidden fixed bottom-6 right-6 z-50">
 			<button class="btn btn-primary shadow-2xl rounded-full px-6" @click="saveData" :disabled="loading">
 				<span v-if="loading" class="loading loading-spinner"></span>
 				{{ loading ? '...' : 'Save' }}
@@ -303,10 +309,11 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, defineComponent, h, type PropType } from 'vue';
+import { storeToRefs } from 'pinia';
 import type { CompanyData, ServiceItem, Reason, Review, PackageInclude, IncludedCategory, Highlight } from '../interfaces/index';
 
 useHead({
-	title: 'Data | Ebbys Gold'
+	title: 'Data | Ebbygold Travels'
 })
 
 const { $supabase } = useNuxtApp();
@@ -501,6 +508,8 @@ const PackageEditor = defineComponent({
 // ==========================================
 
 // --- State ---
+const store = useAppStore();
+const { isAdmin } = storeToRefs(store);
 const loading = ref(false);
 const initialLoading = ref(true);
 const activeSection = ref('general');

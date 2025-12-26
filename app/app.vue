@@ -19,10 +19,18 @@ useHead({
 const { loading } = storeToRefs(useAppStore())
 
 onMounted(async () => {
-  useAppStore().$patch({ loading: true })
-  await useAppStore().getRegistrations()
-  await useAppStore().getMessages()
-  await useAppStore().getAppointments()
+  const { $supabase } = useNuxtApp()
+  const { data: { session } } = await $supabase.auth.getSession()
+
+  if (session) {
+    useAppStore().$patch({ loading: true })
+    await useAppStore().getProfile()
+    await useAppStore().getRegistrations()
+    await useAppStore().getMessages()
+    await useAppStore().getAppointments()
+    await useAppStore().getReceipts()
+  }
+
   useAppStore().$patch({ loading: false })
 })
 </script>

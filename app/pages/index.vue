@@ -56,7 +56,7 @@ import { storeToRefs } from 'pinia'
 import type { Registration } from '~/interfaces/index'
 
 useHead({
-   title: 'Dashboard | Ebbys Gold'
+   title: 'Dashboard | Ebbygold Travels'
 })
 
 const { registrations, messages } = storeToRefs(useAppStore())
