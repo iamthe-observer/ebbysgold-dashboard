@@ -333,7 +333,7 @@
 				<div class="overflow-y-auto max-h-[80vh] p-12"> <!-- Scrollable content area -->
 					<form method="dialog">
 						<button
-							class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-black z-50">✕</button>
+							class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-white z-50">✕</button>
 					</form>
 
 					<!-- Receipt Layout (Reuse) -->
@@ -397,10 +397,10 @@
 										</th>
 										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
 										</th>
-										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-54">
 											Price
 										</th>
-										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-54">
 											Total
 										</th>
 									</tr>
