@@ -186,10 +186,10 @@
 			</div>
 
 			<!-- Preview Panel (Right Side) -->
-			<div class="w-full lg:w-2/3 bg-black p-4 md:p-8 overflow-y-auto flex justify-center items-start print-area-container"
+			<div class="w-full lg:w-2/3 bg-black p-4 md:p-8 overflow-auto flex items-start print-area-container"
 				:class="{ 'hidden lg:flex': mobileMode === 'edit' }">
 				<!-- Receipt Paper -->
-				<div id="receipt-preview-container" class="transform-gpu transition-all duration-300 origin-top"
+				<div id="receipt-preview-container" class="transform-gpu transition-all duration-300 origin-top mx-auto"
 					:style="previewScaleStyle">
 					<div id="printable-receipt"
 						class="bg-white text-black shadow-2xl p-6 md:p-12 relative flex flex-col transition-all duration-300"
