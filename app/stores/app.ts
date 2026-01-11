@@ -45,6 +45,10 @@ export const useAppStore = defineStore('app', () => {
     notifications.value = []
   }
 
+  const clearToasts = () => {
+    toasts.value = []
+  }
+
   const navigateToNotif = (notif: Notification) => {
     if (notif.type === 'registration') {
       activeTab.value = 'registrations'
@@ -305,5 +309,6 @@ export const useAppStore = defineStore('app', () => {
     updateRegistrationStatus,
     updateMessageStatus,
     updateAppointmentStatus,
+    clearToasts
   }
 })

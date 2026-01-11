@@ -57,16 +57,26 @@
 					<!-- Receipt Meta -->
 					<div class="card bg-neutral shadow-sm p-4 rounded-none">
 						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Receipt Details</h3>
+						<div class="mb-3">
+							<label class="label label-text p-0 mb-1 text-xs">Date</label>
+							<input v-model="receipt.date" type="date"
+								class="input input-bordered input-sm w-full rounded-none" />
+						</div>
 						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<label class="label label-text p-0 mb-1 text-xs">Date</label>
-								<input v-model="receipt.date" type="date"
-									class="input input-bordered input-sm w-full rounded-none" />
-							</div>
 							<div>
 								<label class="label label-text p-0 mb-1 text-xs">Receipt #</label>
 								<input v-model="receipt.number" type="text" readonly
 									class="input input-bordered input-sm w-full opacity-70 cursor-not-allowed rounded-none" />
+							</div>
+							<div>
+								<label class="label label-text p-0 mb-1 text-xs">Currency</label>
+								<select v-model="receipt.currency"
+									class="select select-bordered select-sm w-full rounded-none">
+									<option value="GHS">GHS (₵)</option>
+									<option value="USD">USD ($)</option>
+									<option value="EUR">EUR (€)</option>
+									<option value="GBP">GBP (£)</option>
+								</select>
 							</div>
 						</div>
 					</div>
@@ -131,6 +141,46 @@
 						</div>
 					</div>
 
+					<!-- Print Settings -->
+					<div class="card bg-neutral shadow-sm p-4 rounded-none">
+						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Print Settings</h3>
+						<div class="grid grid-cols-2 gap-3">
+							<div>
+								<label class="label label-text p-0 mb-1 text-xs">Paper Size</label>
+								<select v-model="printSettings.paperSize"
+									class="select select-bordered select-sm w-full rounded-none">
+									<option value="a4">A4</option>
+									<option value="letter">Letter</option>
+									<option value="a5">A5</option>
+								</select>
+							</div>
+							<div>
+								<label class="label label-text p-0 mb-1 text-xs">Orientation</label>
+								<div class="flex bg-base-100 rounded-none p-1 border border-base-content/20">
+									<button @click="printSettings.orientation = 'portrait'"
+										class="flex-1 btn btn-xs rounded-none"
+										:class="printSettings.orientation === 'portrait' ? 'btn-active' : 'btn-ghost'">
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+											viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+										</svg>
+									</button>
+									<button @click="printSettings.orientation = 'landscape'"
+										class="flex-1 btn btn-xs rounded-none"
+										:class="printSettings.orientation === 'landscape' ? 'btn-active' : 'btn-ghost'">
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+											viewBox="0 0 24 24" stroke="currentColor">
+											<!-- Landscape icon -->
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M19 7H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z" />
+										</svg>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
 				</div>
 				<div class="h-20"></div> <!-- Spacer -->
 			</div>
@@ -139,119 +189,133 @@
 			<div class="w-full lg:w-2/3 bg-black p-4 md:p-8 overflow-y-auto flex justify-center items-start print-area-container"
 				:class="{ 'hidden lg:flex': mobileMode === 'edit' }">
 				<!-- Receipt Paper -->
-				<div id="printable-receipt"
-					class="bg-white text-black w-full max-w-[21cm] min-h-[29.7cm] shadow-2xl p-6 md:p-12 relative flex flex-col origin-top scale-[0.9] sm:scale-100">
+				<div id="receipt-preview-container" class="transform-gpu transition-all duration-300 origin-top"
+					:style="previewScaleStyle">
+					<div id="printable-receipt"
+						class="bg-white text-black shadow-2xl p-6 md:p-12 relative flex flex-col transition-all duration-300"
+						:class="{ 'landscape-mode': printSettings.orientation === 'landscape' }"
+						:style="receiptDimensions">
 
-					<!-- Header -->
-					<div class="flex justify-between items-start mb-12">
-						<div>
-							<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
-								<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
-									alt="Ebbysgold Logo" />
-							</h1>
-							<div class="text-slate-500 text-sm leading-relaxed">
-								<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
-								<p v-if="receipt.companyPhone || receipt.companyEmail">
-									{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ') }}
-								</p>
+						<!-- Header -->
+						<div class="flex justify-between items-start mb-12">
+							<div>
+								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
+									<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
+										alt="Ebbysgold Logo" />
+								</h1>
+								<div class="text-slate-500 text-sm leading-relaxed">
+									<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
+									<p v-if="receipt.companyPhone || receipt.companyEmail">
+										{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ') }}
+									</p>
+								</div>
+							</div>
+							<div class="text-right">
+								<div
+									class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
+									RECEIPT
+								</div>
+								<div class="relative z-10">
+									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number
+									</div>
+									<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number }}
+									</div>
+
+									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
+									<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
+								</div>
 							</div>
 						</div>
-						<div class="text-right">
-							<div
-								class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
-								RECEIPT
-							</div>
-							<div class="relative z-10">
-								<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number</div>
-								<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number }}</div>
 
-								<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
-								<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
+						<!-- Bill To -->
+						<div class="mb-12 border-b-2 border-slate-100 pb-8">
+							<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
+							<div class="text-lg font-bold text-slate-800 mb-1">{{
+								receipt.customerName || 'Guest Customer'
+							}}
 							</div>
 						</div>
-					</div>
 
-					<!-- Bill To -->
-					<div class="mb-12 border-b-2 border-slate-100 pb-8">
-						<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
-						<div class="text-lg font-bold text-slate-800 mb-1">{{ receipt.customerName || 'Guest Customer'
-						}}
+						<!-- Items Table -->
+						<div class="flex-grow">
+							<table class="w-full mb-8">
+								<thead>
+									<tr class="border-b-2 border-slate-800">
+										<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">
+											Description
+										</th>
+										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
+										</th>
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+											Price
+										</th>
+										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+											Total
+										</th>
+									</tr>
+								</thead>
+								<tbody class="text-slate-700">
+									<tr v-for="(item, i) in receipt.items" :key="i" class="border-b border-slate-100">
+										<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
+										<td class="py-4 text-center">{{ item.qty }}</td>
+										<td class="py-4 text-right">{{ formatCurrency(item.price, receipt.currency) }}
+										</td>
+										<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty
+											*
+											item.price, receipt.currency) }}</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
-					</div>
 
-					<!-- Items Table -->
-					<div class="flex-grow">
-						<table class="w-full mb-8">
-							<thead>
-								<tr class="border-b-2 border-slate-800">
-									<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">Description
-									</th>
-									<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
-									</th>
-									<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Price
-									</th>
-									<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">Total
-									</th>
-								</tr>
-							</thead>
-							<tbody class="text-slate-700">
-								<tr v-for="(item, i) in receipt.items" :key="i" class="border-b border-slate-100">
-									<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
-									<td class="py-4 text-center">{{ item.qty }}</td>
-									<td class="py-4 text-right">{{ formatCurrency(item.price) }}</td>
-									<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty *
-										item.price) }}</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-
-					<!-- Summaries -->
-					<div class="flex justify-end mb-16">
-						<div class="w-1/2 space-y-3">
-							<div class="flex justify-between text-slate-500">
-								<span>Subtotal</span>
-								<span>{{ formatCurrency(subtotal) }}</span>
-							</div>
-							<div class="flex justify-between text-slate-500"
-								v-if="receipt.taxRate && receipt.taxRate > 0">
-								<span>Tax ({{ receipt.taxRate }}%)</span>
-								<span>{{ formatCurrency(taxAmount) }}</span>
-							</div>
-							<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
-								<span>Discount</span>
-								<span class="text-red-500">- {{ formatCurrency(receipt.discount) }}</span>
-							</div>
-							<div
-								class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
-								<span>Total</span>
-								<span>{{ formatCurrency(total) }}</span>
+						<!-- Summaries -->
+						<div class="flex justify-end mb-16">
+							<div class="w-1/2 space-y-3">
+								<div class="flex justify-between text-slate-500">
+									<span>Subtotal</span>
+									<span>{{ formatCurrency(subtotal, receipt.currency) }}</span>
+								</div>
+								<div class="flex justify-between text-slate-500"
+									v-if="receipt.taxRate && receipt.taxRate > 0">
+									<span>Tax ({{ receipt.taxRate }}%)</span>
+									<span>{{ formatCurrency(taxAmount, receipt.currency) }}</span>
+								</div>
+								<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
+									<span>Discount</span>
+									<span class="text-red-500">- {{ formatCurrency(receipt.discount, receipt.currency)
+									}}</span>
+								</div>
+								<div
+									class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
+									<span>Total</span>
+									<span>{{ formatCurrency(total, receipt.currency) }}</span>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- Signatures -->
-					<div class="flex justify-end w-full gap-12 mb-8 mt-auto">
-						<!-- <div>
+						<!-- Signatures -->
+						<div class="flex justify-end w-full gap-12 mb-8 mt-auto">
+							<!-- <div>
 							<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
 							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
 							</div>
 						</div> -->
-						<div class="w-1/2">
-							<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
-								<!-- Optional Placeholder for Stamp area -->
+							<div class="w-1/2">
+								<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
+									<!-- Optional Placeholder for Stamp area -->
+								</div>
+								<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
+									Signature</div>
 							</div>
-							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
-								Signature</div>
 						</div>
-					</div>
 
-					<!-- Footer -->
-					<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
-						<p>Thank you for your business!</p>
-						<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
-					</div>
+						<!-- Footer -->
+						<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+							<p>Thank you for your business!</p>
+							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
+						</div>
 
+					</div>
 				</div>
 			</div>
 		</div>
@@ -260,7 +324,8 @@
 		<div v-show="activeTab === 'view'" class="flex-grow p-8 overflow-y-auto">
 			<div class="container mx-auto max-w-5xl">
 				<div class="flex justify-between items-center mb-6">
-					<h2 class="text-2xl font-bold">Saved Receipts [ <span class="text-amber-400">{{ savedReceipts.length
+					<h2 class="text-2xl font-bold">Saved Receipts [ <span class="text-amber-400">{{
+						savedReceipts.length
 					}}</span> ]</h2>
 					<button @click="createNew"
 						class="btn bg-amber-400 text-black hover:bg-amber-500 btn-sm rounded-none">+ Create
@@ -276,7 +341,7 @@
 				<div v-if="savedReceipts.length === 0"
 					class="text-center text-gray-500 mt-10 p-10 bg-base-200 rounded-none">
 					<p class="text-lg">No saved receipts found</p>
-					<button @click="activeTab = 'create'" class="btn btn-link rounded-none">Create your first
+					<button @click="createNew" class="btn btn-link rounded-none">Create your first
 						receipt</button>
 				</div>
 
@@ -304,7 +369,7 @@
 									</p>
 									<div class="flex justify-between items-center mt-4">
 										<span class="font-bold text-lg text-amber-400">{{
-											formatCurrency(calculateTotal(saved))
+											formatCurrency(calculateTotal(saved), saved.currency)
 										}}</span>
 									</div>
 								</div>
@@ -332,8 +397,7 @@
 				v-if="selectedReceipt">
 				<div class="overflow-y-auto max-h-[80vh] p-12"> <!-- Scrollable content area -->
 					<form method="dialog">
-						<button
-							class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-white z-50">✕</button>
+						<button class="btn btn-sm btn-circle bg-black absolute right-2 top-2 text-white z-50">✕</button>
 					</form>
 
 					<!-- Receipt Layout (Reuse) -->
@@ -347,7 +411,8 @@
 										alt="Ebbysgold Logo" />
 								</h1>
 								<div class="text-slate-500 text-sm leading-relaxed">
-									<p v-if="selectedReceipt.companyAddress">{{ selectedReceipt.companyAddress }}</p>
+									<p v-if="selectedReceipt.companyAddress">{{ selectedReceipt.companyAddress }}
+									</p>
 									<p v-if="selectedReceipt.companyPhone || selectedReceipt.companyEmail">
 										{{ [selectedReceipt.companyPhone,
 										selectedReceipt.companyEmail].filter(Boolean).join(' • ')
@@ -379,7 +444,8 @@
 
 						<!-- Bill To -->
 						<div class="mb-12 border-b-2 border-slate-100 pb-8">
-							<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
+							<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To
+							</div>
 							<div class="text-lg font-bold text-slate-800 mb-1">
 								{{
 									selectedReceipt.customerName || 'Guest Customer'
@@ -395,7 +461,8 @@
 										<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">
 											Description
 										</th>
-										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
+										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">
+											Qty
 										</th>
 										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-54">
 											Price
@@ -408,12 +475,15 @@
 								<tbody class="text-slate-700">
 									<tr v-for="(item, i) in selectedReceipt.items" :key="i"
 										class="border-b border-slate-100">
-										<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
+										<td class="py-4 font-medium">{{ item.description || 'Item description' }}
+										</td>
 										<td class="py-4 text-center">{{ item.qty }}</td>
-										<td class="py-4 text-right">{{ formatCurrency(item.price) }}</td>
-										<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty
-											*
-											item.price) }}</td>
+										<td class="py-4 text-right">{{ formatCurrency(item.price,
+											selectedReceipt.currency) }}</td>
+										<td class="py-4 text-right font-bold text-slate-800">{{
+											formatCurrency(item.qty
+												*
+												item.price, selectedReceipt.currency) }}</td>
 									</tr>
 								</tbody>
 							</table>
@@ -426,23 +496,27 @@
 									<div class="w-1/2 space-y-3">
 										<div class="flex justify-between text-slate-500">
 											<span>Subtotal</span>
-											<span>{{ formatCurrency(calculateSubtotal(selectedReceipt)) }}</span>
+											<span>{{ formatCurrency(calculateSubtotal(selectedReceipt),
+												selectedReceipt.currency) }}</span>
 										</div>
 										<div class="flex justify-between text-slate-500"
 											v-if="selectedReceipt.taxRate && selectedReceipt.taxRate > 0">
 											<span>Tax ({{ selectedReceipt.taxRate }}%)</span>
-											<span>{{ formatCurrency(calculateTax(selectedReceipt)) }}</span>
+											<span>{{ formatCurrency(calculateTax(selectedReceipt),
+												selectedReceipt.currency) }}</span>
 										</div>
 										<div class="flex justify-between text-slate-500"
 											v-if="selectedReceipt.discount > 0">
 											<span>Discount</span>
-											<span class="text-red-500">- {{ formatCurrency(selectedReceipt.discount)
+											<span class="text-red-500">- {{ formatCurrency(selectedReceipt.discount,
+												selectedReceipt.currency)
 											}}</span>
 										</div>
 										<div
 											class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
 											<span>Total</span>
-											<span>{{ formatCurrency(calculateTotal(selectedReceipt)) }}</span>
+											<span>{{ formatCurrency(calculateTotal(selectedReceipt),
+												selectedReceipt.currency) }}</span>
 										</div>
 									</div>
 								</div>
@@ -468,7 +542,8 @@
 						<!-- Footer -->
 						<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
 							<p>Thank you for your business!</p>
-							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
+							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.
+							</p>
 						</div>
 
 					</div>
@@ -526,10 +601,57 @@
 					</div>
 				</div>
 			</div>
+		</dialog>
+
+		<!-- Success Modal -->
+		<dialog id="success_modal" class="modal">
+			<div class="modal-box rounded-none bg-base-100 text-base-content">
+				<h3 class="font-bold text-lg text-success">Success!</h3>
+				<p class="py-4">Receipt has been created and saved successfully.</p>
+				<div class="modal-action">
+					<form method="dialog">
+						<button class="btn btn-primary rounded-none">Continue</button>
+					</form>
+				</div>
+			</div>
 			<form method="dialog" class="modal-backdrop">
 				<button>close</button>
 			</form>
 		</dialog>
+
+		<!-- Dynamic Print Styles -->
+		<component :is="'style'">
+			@page {
+			size: {{ printSettings.paperSize }} {{ printSettings.orientation }};
+			margin: 0;
+			}
+			@media print {
+			body {
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+			}
+			#printable-receipt {
+			width: 100% !important;
+			height: 100% !important;
+			box-shadow: none !important;
+			margin: 0 !important;
+			page-break-after: always;
+			}
+			.hidden-on-print {
+			display: none !important;
+			}
+			.print-area-container {
+			padding: 0 !important;
+			margin: 0 !important;
+			overflow: visible !important;
+			display: block !important;
+			}
+			/* Hide everything else */
+			body > *:not(#__nuxt) {
+			display: none;
+			}
+			}
+		</component>
 	</div>
 </template>
 
@@ -647,8 +769,51 @@ const createDefaultReceipt = () => {
 		],
 		taxRate: 0,
 		discount: 0,
+		currency: 'GHS',
 	};
 };
+
+const printSettings = reactive({
+	paperSize: 'a4', // a4, letter, a5
+	orientation: 'portrait', // portrait, landscape
+});
+
+const paperDimensions = computed(() => {
+	const sizes: any = {
+		a4: { w: 210, h: 297 }, // mm
+		letter: { w: 215.9, h: 279.4 },
+		a5: { w: 148, h: 210 }
+	};
+	const size = sizes[printSettings.paperSize] || sizes.a4;
+
+	if (printSettings.orientation === 'landscape') {
+		return { w: size.h, h: size.w };
+	}
+	return size;
+});
+
+const receiptDimensions = computed(() => {
+	const { w, h } = paperDimensions.value;
+	return {
+		width: `${w}mm`,
+		minHeight: `${h}mm`,
+		// For preview, we force aspect ratio or fixed size
+	};
+});
+
+// Scale preview to fit container
+const previewScaleStyle = computed(() => {
+	// A rough auto-scale for preview purposes based on window width could be added,
+	// but for now we'll stick to a responsive scale or fixed scale.
+	// This acts as a wrapper capability.
+	// Dynamic scaling logic can be sophisticated, for simplicity let's rely on CSS transform
+	// based on the width to fit standard viewports.
+
+	// Let's just return a decent default scale for larger screens
+	return {
+		transform: 'scale(1)', // Can be made dynamic if needed
+	};
+});
 
 const receipt = reactive(createDefaultReceipt());
 
@@ -689,8 +854,20 @@ const calculateTotal = (r: any) => {
 	return sub + tax - r.discount;
 };
 
-const formatCurrency = (value: number) => {
-	return 'GHS ' + new Intl.NumberFormat('en-US', {
+const formatCurrency = (value: number, currency = 'GHS') => {
+	const currencyMap: any = {
+		'GHS': 'GHS',
+		'USD': 'USD',
+		'EUR': 'EUR',
+		'GBP': 'GBP'
+	};
+
+	// Fallback to GHS if currency is not found or null
+	const currencyCode = currencyMap[currency] || 'GHS';
+
+	return new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: currencyCode,
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	}).format(value);
@@ -711,6 +888,7 @@ const removeItem = (index: number) => {
 const createNew = () => {
 	Object.assign(receipt, createDefaultReceipt());
 	activeTab.value = 'create';
+	mobileMode.value = 'edit';
 };
 
 const saveAndPrint = async () => {
@@ -744,6 +922,12 @@ const saveAndPrint = async () => {
 		// 2. Print Logic
 		setTimeout(() => {
 			window.print();
+
+			// 3. Post-Print Logic
+			activeTab.value = 'view';
+			const modal = document.getElementById('success_modal') as HTMLDialogElement;
+			if (modal) modal.showModal();
+
 		}, 100);
 	} catch (error: any) {
 		console.error('Error saving receipt:', error);
@@ -752,8 +936,12 @@ const saveAndPrint = async () => {
 };
 
 const loadReceipt = (saved: any) => {
-	Object.assign(receipt, JSON.parse(JSON.stringify(saved))); // Deep copy
+	// Reset to defaults first to ensure structure and default values (like currency)
+	Object.assign(receipt, createDefaultReceipt());
+	// Then overwrite with saved data
+	Object.assign(receipt, JSON.parse(JSON.stringify(saved)));
 	activeTab.value = 'create';
+	mobileMode.value = 'edit';
 };
 
 const deleteReceipt = async (index: number) => {

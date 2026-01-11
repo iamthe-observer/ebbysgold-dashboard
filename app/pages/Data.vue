@@ -566,20 +566,12 @@ const formData = reactive<CompanyData>(JSON.parse(JSON.stringify(defaultData)));
 const fetchData = async () => {
 	initialLoading.value = true;
 	try {
-		const { data, error } = await $supabase
-			.from('company_settings')
-			.select('content')
-			.order('id', { ascending: true })
-			.limit(1)
-			.single();
-
-		if (error && error.code !== 'PGRST116') { // Ignore 'empty result' error
-			console.error('Error fetching data:', error);
-		}
-
-		if (data && data.content) {
-			// Merge fetched data with default structure to ensure all keys exist
-			Object.assign(formData, { ...defaultData, ...data.content });
+		if (import.meta.client) {
+			const stored = localStorage.getItem('company_settings');
+			if (stored) {
+				const parsed = JSON.parse(stored);
+				Object.assign(formData, { ...defaultData, ...parsed });
+			}
 		}
 	} catch (e) {
 		console.error('Unexpected error:', e);
@@ -591,28 +583,10 @@ const fetchData = async () => {
 const saveData = async () => {
 	loading.value = true;
 	try {
-		// Upsert to row with ID 1 (or create new if not exists)
-		// We assume a single row configuration
-
-		// First check if a row exists
-		const { data: existing } = await $supabase.from('company_settings').select('id').limit(1);
-
-		let error;
-		if (existing && existing.length > 0) {
-			const { error: updateError } = await $supabase
-				.from('company_settings')
-				.update({ content: formData })
-				.eq('id', existing[0]!.id);
-			error = updateError;
-		} else {
-			const { error: insertError } = await $supabase
-				.from('company_settings')
-				.insert({ content: formData });
-			error = insertError;
+		if (import.meta.client) {
+			localStorage.setItem('company_settings', JSON.stringify(formData));
+			alert('Changes saved successfully!');
 		}
-
-		if (error) throw error;
-		alert('Changes saved successfully!');
 	} catch (e: any) {
 		console.error('Error saving data:', e);
 		alert('Failed to save data: ' + e.message);

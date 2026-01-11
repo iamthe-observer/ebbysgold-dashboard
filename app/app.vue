@@ -6,9 +6,9 @@
     </NuxtLayout>
 
     <!-- Global Toasts -->
-    <div class="toast toast-top toast-end z-[9999]">
+    <div class="toast toast-top toast-end z-[9999] flex flex-col items-end gap-2">
       <div v-for="toast in toasts" :key="toast.id"
-        class="alert shadow-lg border-amber-400 bg-neutral text-white animate-bounce-short">
+        class="alert shadow-lg border-amber-400 bg-neutral text-white animate-bounce-short w-80">
         <div class="flex items-center gap-2">
           <div class="p-2 bg-amber-400 rounded-full text-black">
             <svg v-if="toast.type === 'registration'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -33,6 +33,10 @@
           </div>
         </div>
       </div>
+      <button v-if="toasts.length > 0" @click="useAppStore().clearToasts()"
+        class="btn btn-sm bg-amber-400 hover:bg-amber-500 text-black border-none w-full shadow-lg">
+        Clear All
+      </button>
     </div>
   </div>
 </template>
@@ -58,7 +62,10 @@ onMounted(async () => {
 
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
       if (session) {
-        store.$patch({ loading: true })
+        // Only show loading screen if we don't have data yet
+        if (!store.profile) {
+          store.$patch({ loading: true })
+        }
         try {
           await Promise.all([
             store.getProfile(),
