@@ -1,5 +1,6 @@
 export type Registration = {
   id?: string
+  shirt_size: string
   created_at: Date
   firstName: string
   lastName: string

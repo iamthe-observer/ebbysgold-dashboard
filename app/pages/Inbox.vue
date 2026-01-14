@@ -156,7 +156,12 @@
 												<span class="text-slate-800">{{ curr_reg!.visaCountry || 'N/A' }}</span>
 
 												<span class="font-bold text-slate-500">Visa Assistance:</span>
-												<span class="text-slate-800">{{ curr_reg!.visaAssist || 'N/A' }}</span>
+												<span class="text-slate-800">{{ curr_reg!.visaAssist ? 'Yes' : 'No'
+												}}</span>
+
+												<span class="font-bold text-slate-500">Shirt Size:</span>
+												<span class="text-slate-800">{{ curr_reg!.shirt_size || 'N/A'
+												}}</span>
 											</div>
 										</div>
 									</div>
@@ -535,6 +540,7 @@ const curr_reg = ref<Registration | null>({
 	uniqueID: '',
 	visaAssist: '',
 	visaCountry: '',
+	shirt_size: '',
 	created_at: new Date(),
 	whatsapp: '',
 	passExp: '',
