@@ -39,6 +39,7 @@ export interface Receipt {
   taxRate: number
   discount: number
   currency: string
+  logo?: string
 }
 
 export type Message = {

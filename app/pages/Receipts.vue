@@ -46,11 +46,28 @@
 					<!-- Company Info -->
 					<div class="card bg-neutral shadow-sm p-4 rounded-none">
 						<h3 class="font-semibold mb-3 text-sm uppercase tracking-wider opacity-70">Company Details</h3>
-						<div class="space-y-1 text-sm text-gray-400">
+						<div class="space-y-1 text-sm text-gray-400 mb-4">
 							<p class="font-bold text-white">{{ receipt.companyName }}</p>
 							<p>{{ receipt.companyAddress }}</p>
 							<p>{{ receipt.companyPhone }}</p>
 							<p>{{ receipt.companyEmail }}</p>
+						</div>
+
+						<!-- Logo Selector -->
+						<div>
+							<label class="label label-text p-0 mb-2 text-xs">Receipt Logo</label>
+							<div class="flex gap-2">
+								<button @click="receipt.logo = 'logob.png'"
+									class="flex-1 btn btn-sm rounded-none border-2"
+									:class="receipt.logo === 'logob.png' ? 'btn-active border-amber-400' : 'btn-ghost border-transparent'">
+									Default
+								</button>
+								<button @click="receipt.logo = 'logoG.png'"
+									class="flex-1 btn btn-sm rounded-none border-2"
+									:class="receipt.logo === 'logoG.png' ? 'btn-active border-amber-400' : 'btn-ghost border-transparent'">
+									Gold
+								</button>
+							</div>
 						</div>
 					</div>
 
@@ -200,8 +217,8 @@
 						<div class="flex justify-between items-start mb-12">
 							<div>
 								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
-									<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
-										alt="Ebbysgold Logo" />
+									<NuxtImg :src="receipt.logo ? '/' + receipt.logo : '/logob.png'"
+										class="w-2/3 aspect-video object-cover drop-shadow-xl" alt="Ebbysgold Logo" />
 								</h1>
 								<div class="text-slate-500 text-sm leading-relaxed">
 									<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
@@ -327,9 +344,38 @@
 					<h2 class="text-2xl font-bold">Saved Receipts [ <span class="text-amber-400">{{
 						savedReceipts.length
 					}}</span> ]</h2>
-					<button @click="createNew"
-						class="btn bg-amber-400 text-black hover:bg-amber-500 btn-sm rounded-none">+ Create
-						New</button>
+					<div class="flex gap-2">
+						<!-- View Toggle -->
+						<div class="join border border-white/20">
+							<button class="join-item btn btn-sm rounded-none"
+								:class="viewMode === 'card' ? 'bg-white text-black hover:bg-white' : 'btn-ghost'"
+								@click="viewMode = 'card'">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+								</svg>
+							</button>
+							<button class="join-item btn btn-sm rounded-none"
+								:class="viewMode === 'list' ? 'bg-white text-black hover:bg-white' : 'btn-ghost'"
+								@click="viewMode = 'list'">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M4 6h16M4 12h16M4 18h16" />
+								</svg>
+							</button>
+						</div>
+						<button @click="createNew"
+							class="btn bg-amber-400 text-black hover:bg-amber-500 btn-sm rounded-none gap-2">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+								stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M12 4v16m8-8H4" />
+							</svg>
+							Create New
+						</button>
+					</div>
 				</div>
 
 				<div class="mb-6" v-if="savedReceipts.length > 0">
@@ -345,48 +391,77 @@
 						receipt</button>
 				</div>
 
-				<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					<!-- <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
+				<div v-else>
+					<!-- Card View -->
+					<div v-if="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-					<!-- <div class="hover-3d" v-for="(saved, index) in savedReceipts" :key="index"> -->
-					<div class="hover-3d cursor-pointer" v-for="(saved, index) in filteredSavedReceipts" :key="index"
-						@click="openReceiptModal(saved)">
-						<!-- content -->
-						<figure class="max-w-100 rounded-none">
+						<!-- <div class="hover-3d" v-for="(saved, index) in savedReceipts" :key="index"> -->
+						<div class="hover-3d cursor-pointer" v-for="(saved, index) in filteredSavedReceipts"
+							:key="index" @click="openReceiptModal(saved)">
+							<!-- content -->
+							<figure class="max-w-100 rounded-none">
 
-							<div class="card bg-[radial-gradient(circle_at_bottom_left,#ffffff04_35%,transparent_36%),radial-gradient(circle_at_top_right,#ffffff04_35%,transparent_36%)] bg-size-[4.95em_4.95em] shadow-lg hover:shadow-xl transition-shadow rounded-none relative overflow-hidden"
-								@mousemove="handleCardMouseMove($event)">
-								<div class="card-body p-5">
-									<div class="flex justify-between items-start mb-2">
-										<h3 class="card-title text-base">{{ saved.number }}</h3>
-										<div class="badge badge-outline rounded-none">{{ new
-											Date(saved.date).toLocaleDateString() }}</div>
-									</div>
-									<p class="text-sm text-gray-500 font-medium truncate">
-										{{
-											saved.customerName || 'No Name'
-										}}
-									</p>
-									<div class="flex justify-between items-center mt-4">
-										<span class="font-bold text-lg text-amber-400">{{
-											formatCurrency(calculateTotal(saved), saved.currency)
-										}}</span>
+								<div class="card bg-[radial-gradient(circle_at_bottom_left,#ffffff04_35%,transparent_36%),radial-gradient(circle_at_top_right,#ffffff04_35%,transparent_36%)] bg-size-[4.95em_4.95em] shadow-lg hover:shadow-xl transition-shadow rounded-none relative overflow-hidden"
+									@mousemove="handleCardMouseMove($event)">
+									<div class="card-body p-5">
+										<div class="flex justify-between items-start mb-2">
+											<h3 class="card-title text-base">{{ saved.number }}</h3>
+											<div class="badge badge-outline rounded-none">{{ new
+												Date(saved.date).toLocaleDateString() }}</div>
+										</div>
+										<p class="text-sm text-gray-500 font-medium truncate">
+											{{
+												saved.customerName || 'No Name'
+											}}
+										</p>
+										<div class="flex justify-between items-center mt-4">
+											<span class="font-bold text-lg text-amber-400">{{
+												formatCurrency(calculateTotal(saved), saved.currency)
+											}}</span>
+										</div>
 									</div>
 								</div>
-							</div>
 
-						</figure>
-						<!-- 8 empty divs needed for the 3D effect -->
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
+							</figure>
+							<!-- 8 empty divs needed for the 3D effect -->
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+						</div>
+
 					</div>
 
+					<!-- List View -->
+					<div v-else class="overflow-x-auto">
+						<table class="table w-full border border-white/10">
+							<!-- head -->
+							<thead class="bg-neutral text-white">
+								<tr>
+									<th class="rounded-none">Receipt #</th>
+									<th>Date</th>
+									<th>Customer</th>
+									<th class="text-right">Amount</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(saved, index) in filteredSavedReceipts" :key="index"
+									class="hover:bg-white/5 cursor-pointer border-b border-white/5 transition-colors"
+									@click="openReceiptModal(saved)">
+									<td class="font-mono font-bold">{{ saved.number }}</td>
+									<td>{{ new Date(saved.date).toLocaleDateString() }}</td>
+									<td class="text-gray-300">{{ saved.customerName || 'No Name' }}</td>
+									<td class="text-right font-bold text-amber-400 font-mono">
+										{{ formatCurrency(calculateTotal(saved), saved.currency) }}
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -406,9 +481,9 @@
 						<!-- Header -->
 						<div class="flex justify-between items-start mb-12">
 							<div>
-								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
-									<NuxtImg src="/logob.png" class="w-2/3 aspect-video object-cover drop-shadow-xl"
-										alt="Ebbysgold Logo" />
+								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2 max-w-[400px]">
+									<NuxtImg :src="selectedReceipt.logo ? '/' + selectedReceipt.logo : '/logob.png'"
+										class="w-2/3 aspect-video object-cover drop-shadow-xl" alt="Ebbysgold Logo" />
 								</h1>
 								<div class="text-slate-500 text-sm leading-relaxed">
 									<p v-if="selectedReceipt.companyAddress">{{ selectedReceipt.companyAddress }}
@@ -672,6 +747,7 @@ const activeTab = ref('view');
 const mobileMode = ref<'edit' | 'preview'>('edit');
 const selectedReceipt = ref<Receipt>();
 const receiptSearch = ref('');
+const viewMode = ref<'card' | 'list'>('card');
 
 const filteredSavedReceipts = computed(() => {
 	if (!receiptSearch.value) return savedReceipts.value;
@@ -770,6 +846,7 @@ const createDefaultReceipt = () => {
 		taxRate: 0,
 		discount: 0,
 		currency: 'GHS',
+		logo: 'logob.png',
 	};
 };
 

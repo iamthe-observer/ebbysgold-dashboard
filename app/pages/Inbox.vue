@@ -556,42 +556,114 @@ const curr_msg = ref<Message | null>({
 
 <style scoped>
 @media print {
+	@page {
+		size: A4;
+		margin: 0mm;
+	}
+
+	html,
+	body {
+		height: 100%;
+		margin: 0 !important;
+		padding: 0 !important;
+		overflow: visible;
+	}
+
 	.no-print {
 		display: none !important;
 	}
 
+	/* Hide everything by default */
 	body * {
 		visibility: hidden;
 	}
 
+	/* Only show the registration modal part */
 	#registration,
 	#registration * {
 		visibility: visible;
 	}
 
 	#registration {
-		position: absolute;
+		position: fixed;
 		left: 0;
 		top: 0;
-		width: 100%;
-		height: auto;
+		width: 100vw;
+		height: 100vh;
 		margin: 0;
 		padding: 0;
-		overflow: visible !important;
+		z-index: 9999;
+		background: white;
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
 	}
 
 	.modal-box {
-		width: 100% !important;
+		width: 210mm !important;
+		/* A4 width */
 		max-width: none !important;
+		min-height: 297mm;
+		/* A4 height */
 		margin: 0 !important;
-		padding: 0 !important;
+		padding: 15mm !important;
+		/* Optimized margins for A4 */
 		box-shadow: none !important;
 		outline: none !important;
+		background: white !important;
+		overflow: visible !important;
+		border-radius: 0 !important;
+		position: static !important;
+		transform: none !important;
+	}
+
+	#printable-registration {
+		width: 100% !important;
+		height: auto !important;
+		background: white !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 
 	.overflow-y-auto {
 		overflow: visible !important;
 		max-height: none !important;
+		padding: 0 !important;
+	}
+
+	/* Adjust font sizes for print - Increased for readability */
+	.text-4xl {
+		font-size: 28pt !important;
+	}
+
+	.text-2xl {
+		font-size: 18pt !important;
+	}
+
+	.text-lg {
+		font-size: 14pt !important;
+	}
+
+	.text-sm {
+		font-size: 12pt !important;
+	}
+
+	/* smallest text was too small, bumped to 10pt */
+	.text-xs {
+		font-size: 10pt !important;
+	}
+
+	/* Ensure grid layouts work well */
+	.grid {
+		display: grid !important;
+	}
+
+	.gap-8 {
+		gap: 1rem !important;
+	}
+
+	.mb-12 {
+		margin-bottom: 2rem !important;
 	}
 }
 </style>
