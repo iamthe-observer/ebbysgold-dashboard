@@ -60,12 +60,12 @@
 								<button @click="receipt.logo = 'logob.png'"
 									class="flex-1 btn btn-sm rounded-none border-2"
 									:class="receipt.logo === 'logob.png' ? 'btn-active border-amber-400' : 'btn-ghost border-transparent'">
-									Default
+									Travels
 								</button>
 								<button @click="receipt.logo = 'logoG.png'"
 									class="flex-1 btn btn-sm rounded-none border-2"
 									:class="receipt.logo === 'logoG.png' ? 'btn-active border-amber-400' : 'btn-ghost border-transparent'">
-									Gold
+									Group
 								</button>
 							</div>
 						</div>
@@ -206,132 +206,147 @@
 			<div class="w-full lg:w-2/3 bg-black p-4 md:p-8 overflow-auto flex items-start print-area-container"
 				:class="{ 'hidden lg:flex': mobileMode === 'edit' }">
 				<!-- Receipt Paper -->
-				<div id="receipt-preview-container" class="transform-gpu transition-all duration-300 origin-top mx-auto"
-					:style="previewScaleStyle">
-					<div id="printable-receipt"
-						class="bg-white text-black shadow-2xl p-6 md:p-12 relative flex flex-col transition-all duration-300"
-						:class="{ 'landscape-mode': printSettings.orientation === 'landscape' }"
-						:style="receiptDimensions">
+				<div ref="previewContainerRef" class="w-full h-full flex items-center justify-center p-4">
+					<div id="receipt-preview-container" ref="receiptPreviewRef"
+						class="transform-gpu transition-all duration-300 origin-center mx-auto shadow-2xl"
+						:style="previewScaleStyle">
+						<div id="printable-receipt"
+							class="bg-white text-black shadow-2xl p-6 md:p-12 relative flex flex-col transition-all duration-300"
+							:class="{ 'landscape-mode': printSettings.orientation === 'landscape' }"
+							:style="receiptDimensions">
 
-						<!-- Header -->
-						<div class="flex justify-between items-start mb-12">
-							<div>
-								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2">
-									<NuxtImg :src="receipt.logo ? '/' + receipt.logo : '/logob.png'"
-										class="w-2/3 aspect-video object-cover drop-shadow-xl" alt="Ebbysgold Logo" />
-								</h1>
-								<div class="text-slate-500 text-sm leading-relaxed">
-									<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
-									<p v-if="receipt.companyPhone || receipt.companyEmail">
-										{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ') }}
-									</p>
-								</div>
-							</div>
-							<div class="text-right">
-								<div
-									class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
-									RECEIPT
-								</div>
-								<div class="relative z-10">
-									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number
+							<!-- Header -->
+							<div class="flex justify-between items-start mb-12">
+								<div>
+									<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2 w-[200px]">
+										<NuxtImg :src="receipt.logo ? '/' + receipt.logo : '/logob.png'"
+											class="w-full aspect-video object-cover drop-shadow-xl"
+											alt="Ebbysgold Logo" />
+									</h1>
+									<div class="text-slate-500 text-sm leading-relaxed">
+										<p v-if="receipt.companyAddress">{{ receipt.companyAddress }}</p>
+										<p v-if="receipt.companyPhone || receipt.companyEmail">
+											{{ [receipt.companyPhone, receipt.companyEmail].filter(Boolean).join(' • ')
+											}}
+										</p>
 									</div>
-									<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number }}
+								</div>
+								<div class="text-right">
+									<div
+										class="text-5xl font-black text-slate-100 uppercase tracking-widest absolute top-10 right-10 -z-0 pointer-events-none select-none">
+										RECEIPT
 									</div>
+									<div class="relative z-10">
+										<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Receipt Number
+										</div>
+										<div class="text-xl font-mono font-bold text-slate-800 mb-4">{{ receipt.number
+										}}
+										</div>
 
-									<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
-									<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
+										<div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Date</div>
+										<div class="text-lg font-medium text-slate-800">{{ formattedDate }}</div>
+									</div>
 								</div>
 							</div>
-						</div>
 
-						<!-- Bill To -->
-						<div class="mb-12 border-b-2 border-slate-100 pb-8">
-							<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To</div>
-							<div class="text-lg font-bold text-slate-800 mb-1">{{
-								receipt.customerName || 'Guest Customer'
-							}}
-							</div>
-						</div>
-
-						<!-- Items Table -->
-						<div class="flex-grow">
-							<table class="w-full mb-8">
-								<thead>
-									<tr class="border-b-2 border-slate-800">
-										<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">
-											Description
-										</th>
-										<th class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">Qty
-										</th>
-										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
-											Price
-										</th>
-										<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
-											Total
-										</th>
-									</tr>
-								</thead>
-								<tbody class="text-slate-700">
-									<tr v-for="(item, i) in receipt.items" :key="i" class="border-b border-slate-100">
-										<td class="py-4 font-medium">{{ item.description || 'Item description' }}</td>
-										<td class="py-4 text-center">{{ item.qty }}</td>
-										<td class="py-4 text-right">{{ formatCurrency(item.price, receipt.currency) }}
-										</td>
-										<td class="py-4 text-right font-bold text-slate-800">{{ formatCurrency(item.qty
-											*
-											item.price, receipt.currency) }}</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-
-						<!-- Summaries -->
-						<div class="flex justify-end mb-16">
-							<div class="w-1/2 space-y-3">
-								<div class="flex justify-between text-slate-500">
-									<span>Subtotal</span>
-									<span>{{ formatCurrency(subtotal, receipt.currency) }}</span>
+							<!-- Bill To -->
+							<div class="mb-12 border-b-2 border-slate-100 pb-8">
+								<div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bill To
 								</div>
-								<div class="flex justify-between text-slate-500"
-									v-if="receipt.taxRate && receipt.taxRate > 0">
-									<span>Tax ({{ receipt.taxRate }}%)</span>
-									<span>{{ formatCurrency(taxAmount, receipt.currency) }}</span>
-								</div>
-								<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
-									<span>Discount</span>
-									<span class="text-red-500">- {{ formatCurrency(receipt.discount, receipt.currency)
-									}}</span>
-								</div>
-								<div
-									class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
-									<span>Total</span>
-									<span>{{ formatCurrency(total, receipt.currency) }}</span>
+								<div class="text-lg font-bold text-slate-800 mb-1">{{
+									receipt.customerName || 'Guest Customer'
+								}}
 								</div>
 							</div>
-						</div>
 
-						<!-- Signatures -->
-						<div class="flex justify-end w-full gap-12 mb-8 mt-auto">
-							<!-- <div>
+							<!-- Items Table -->
+							<div class="flex-grow">
+								<table class="w-full mb-8">
+									<thead>
+										<tr class="border-b-2 border-slate-800">
+											<th class="text-left py-3 text-sm font-bold uppercase tracking-wider">
+												Description
+											</th>
+											<th
+												class="text-center py-3 text-sm font-bold uppercase tracking-wider w-24">
+												Qty
+											</th>
+											<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+												Price
+											</th>
+											<th class="text-right py-3 text-sm font-bold uppercase tracking-wider w-32">
+												Total
+											</th>
+										</tr>
+									</thead>
+									<tbody class="text-slate-700">
+										<tr v-for="(item, i) in receipt.items" :key="i"
+											class="border-b border-slate-100">
+											<td class="py-4 font-medium">{{ item.description || 'Item description' }}
+											</td>
+											<td class="py-4 text-center">{{ item.qty }}</td>
+											<td class="py-4 text-right">{{ formatCurrency(item.price, receipt.currency)
+											}}
+											</td>
+											<td class="py-4 text-right font-bold text-slate-800">{{
+												formatCurrency(item.qty
+													*
+													item.price, receipt.currency) }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+							<!-- Summaries -->
+							<div class="flex justify-end mb-16">
+								<div class="w-1/2 space-y-3">
+									<div class="flex justify-between text-slate-500">
+										<span>Subtotal</span>
+										<span>{{ formatCurrency(subtotal, receipt.currency) }}</span>
+									</div>
+									<div class="flex justify-between text-slate-500"
+										v-if="receipt.taxRate && receipt.taxRate > 0">
+										<span>Tax ({{ receipt.taxRate }}%)</span>
+										<span>{{ formatCurrency(taxAmount, receipt.currency) }}</span>
+									</div>
+									<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
+										<span>Discount</span>
+										<span class="text-red-500">- {{ formatCurrency(receipt.discount,
+											receipt.currency)
+										}}</span>
+									</div>
+									<div
+										class="flex justify-between items-center text-xl font-bold text-slate-800 pt-4 border-t-2 border-slate-800 mt-4">
+										<span>Total</span>
+										<span>{{ formatCurrency(total, receipt.currency) }}</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Signatures -->
+							<div class="flex justify-end w-full gap-12 mb-8 mt-auto">
+								<!-- <div>
 							<div class="h-24 border-b-2 border-slate-300 mb-2"></div>
 							<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Client Signature
 							</div>
 						</div> -->
-							<div class="w-1/2">
-								<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
-									<!-- Optional Placeholder for Stamp area -->
+								<div class="w-1/2">
+									<div class="h-24 border-b-2 border-slate-300 mb-2 relative">
+										<!-- Optional Placeholder for Stamp area -->
+									</div>
+									<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
+										Signature</div>
 								</div>
-								<div class="text-xs uppercase font-bold tracking-widest text-slate-500">Authorized
-									Signature</div>
 							</div>
-						</div>
 
-						<!-- Footer -->
-						<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
-							<p>Thank you for your business!</p>
-							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.</p>
-						</div>
+							<!-- Footer -->
+							<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+								<p>Thank you for your business!</p>
+								<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.
+								</p>
+							</div>
 
+						</div>
 					</div>
 				</div>
 			</div>
@@ -481,9 +496,9 @@
 						<!-- Header -->
 						<div class="flex justify-between items-start mb-12">
 							<div>
-								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2 max-w-[400px]">
+								<h1 class="text-4xl font-bold tracking-tight text-slate-800 mb-2 max-w-[200px]">
 									<NuxtImg :src="selectedReceipt.logo ? '/' + selectedReceipt.logo : '/logob.png'"
-										class="w-2/3 aspect-video object-cover drop-shadow-xl" alt="Ebbysgold Logo" />
+										class="w-full aspect-video object-cover drop-shadow-xl" alt="Ebbysgold Logo" />
 								</h1>
 								<div class="text-slate-500 text-sm leading-relaxed">
 									<p v-if="selectedReceipt.companyAddress">{{ selectedReceipt.companyAddress }}
@@ -731,7 +746,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, computed, ref, onMounted, watch } from 'vue';
+import { reactive, computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import type { Receipt } from "~/interfaces/index";
 import { storeToRefs } from 'pinia';
 
@@ -879,17 +894,60 @@ const receiptDimensions = computed(() => {
 });
 
 // Scale preview to fit container
-const previewScaleStyle = computed(() => {
-	// A rough auto-scale for preview purposes based on window width could be added,
-	// but for now we'll stick to a responsive scale or fixed scale.
-	// This acts as a wrapper capability.
-	// Dynamic scaling logic can be sophisticated, for simplicity let's rely on CSS transform
-	// based on the width to fit standard viewports.
+const previewContainerRef = ref<HTMLElement | null>(null);
+const receiptPreviewRef = ref<HTMLElement | null>(null);
+const previewScale = ref(1);
 
-	// Let's just return a decent default scale for larger screens
+const updatePreviewScale = () => {
+	if (!previewContainerRef.value || !receiptPreviewRef.value) return;
+
+	const containerRect = previewContainerRef.value.getBoundingClientRect();
+	// We use the paper dimensions to calculate expected size
+	const paperW = receiptDimensions.value.width.replace('mm', '');
+	const paperH = receiptDimensions.value.minHeight.replace('mm', '');
+
+	// Convert mm to px (approx 3.78 px per mm)
+	const pxPerMm = 3.78;
+	const contentW = parseFloat(paperW) * pxPerMm;
+	const contentH = parseFloat(paperH) * pxPerMm;
+
+	// Add some padding
+	const padding = 40;
+
+	const availableW = containerRect.width - padding;
+	const availableH = containerRect.height - padding;
+
+	const scaleW = availableW / contentW;
+	const scaleH = availableH / contentH;
+
+	// Use the smaller scale to fit both dimensions
+	previewScale.value = Math.min(scaleW, scaleH, 1); // Max scale 1 to avoid pixelation if it fits
+};
+
+const previewScaleStyle = computed(() => {
 	return {
-		transform: 'scale(1)', // Can be made dynamic if needed
+		transform: `scale(${previewScale.value})`,
+		// Ensure it takes up the layout space
 	};
+});
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+	if (typeof ResizeObserver !== 'undefined' && previewContainerRef.value) {
+		resizeObserver = new ResizeObserver(() => {
+			requestAnimationFrame(updatePreviewScale);
+		});
+		resizeObserver.observe(previewContainerRef.value);
+	}
+	// Initial calculation
+	nextTick(updatePreviewScale);
+});
+
+onUnmounted(() => {
+	if (resizeObserver) {
+		resizeObserver.disconnect();
+	}
 });
 
 const receipt = reactive(createDefaultReceipt());
