@@ -715,32 +715,6 @@
 			size: {{ printSettings.paperSize }} {{ printSettings.orientation }};
 			margin: 0;
 			}
-			@media print {
-			body {
-			-webkit-print-color-adjust: exact;
-			print-color-adjust: exact;
-			}
-			#printable-receipt {
-			width: 100% !important;
-			height: 100% !important;
-			box-shadow: none !important;
-			margin: 0 !important;
-			page-break-after: always;
-			}
-			.hidden-on-print {
-			display: none !important;
-			}
-			.print-area-container {
-			padding: 0 !important;
-			margin: 0 !important;
-			overflow: visible !important;
-			display: block !important;
-			}
-			/* Hide everything else */
-			body > *:not(#__nuxt) {
-			display: none;
-			}
-			}
 		</component>
 	</div>
 </template>
@@ -1183,65 +1157,108 @@ const handleCardMouseMove = (e: MouseEvent) => {
 <style>
 @media print {
 
-	/* Globally hide everything first */
+	/* Global Hiding */
 	body * {
 		visibility: hidden;
 	}
 
-	/* Explicitly hide layout elements that might take up space */
-	.navbar,
-	.drawer-side,
-	.drawer-toggle,
-	.hidden-on-print {
-		display: none !important;
-	}
-
-	/* Reset parent containers */
+	/* Reset layout containers */
 	html,
 	body,
+	#__nuxt,
 	.drawer,
-	.drawer-content,
-	main {
-		background-color: white !important;
+	.drawer-content {
 		width: 100% !important;
+		height: 100% !important;
 		margin: 0 !important;
 		padding: 0 !important;
 		overflow: visible !important;
+		background: white !important;
 	}
 
-	/* Make the receipt visible and positioned */
-	#printable-receipt,
-	#printable-receipt * {
+	/* Hide specific UI elements */
+	.navbar,
+	.drawer-side,
+	.drawer-toggle,
+	.hidden-on-print,
+	.btn,
+	.badge {
+		display: none !important;
+	}
+
+	/* Target the specific print area and make it visible */
+	.print-area-container,
+	.print-area-container * {
 		visibility: visible;
 	}
 
-	/* Position the receipt at the very top left */
+	/* Position the print area */
 	.print-area-container {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		margin: 0;
-		padding: 0;
-		background: white;
+		position: absolute !important;
+		left: 0 !important;
+		top: 0 !important;
+		width: 100% !important;
+		height: 100% !important;
+		margin: 0 !important;
+		padding: 0 !important;
 		display: block !important;
-		/* Ensure it's not flex during print */
+		overflow: visible !important;
+		z-index: 9999 !important;
 	}
 
+	/* Reset the preview container (which has the transform scale) */
+	#receipt-preview-container {
+		transform: none !important;
+		width: 100% !important;
+		height: auto !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		box-shadow: none !important;
+		left: 0 !important;
+		top: 0 !important;
+	}
+
+	/* Reset the wrapper div that centers the preview */
+	.print-area-container>div {
+		display: block !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		height: auto !important;
+	}
+
+	/* Ensure the actual receipt fills the page */
 	#printable-receipt {
-		width: 100%;
-		max-width: none;
-		box-shadow: none;
-		margin: 0;
-		border: none;
-		min-height: 100vh;
+		width: 100% !important;
+		max-width: none !important;
+		min-height: 100vh !important;
+		height: auto !important;
+		box-shadow: none !important;
+		margin: 0 !important;
+		padding: 10mm !important;
+		/* Margin around the doc */
+		border: none !important;
 		print-color-adjust: exact;
 		-webkit-print-color-adjust: exact;
+		box-sizing: border-box !important;
 	}
 
-	@page {
-		size: auto;
-		margin: 0;
+	/* Ensure landscape mode works if selected */
+	#printable-receipt.landscape-mode {
+		width: 100% !important;
+	}
+
+	/* Reset text colors for print */
+	.text-slate-100,
+	.text-slate-300,
+	.text-slate-400,
+	.text-slate-500 {
+		color: #64748b !important;
+		/* Ensure readable contrast */
+	}
+
+	.text-slate-100 {
+		color: #e2e8f0 !important;
 	}
 }
 </style>
