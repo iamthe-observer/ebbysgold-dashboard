@@ -114,29 +114,40 @@
 							<button @click="addItem" class="btn btn-ghost btn-xs text-amber-400  rounded-none">+ Add
 								Item</button>
 						</div>
-						<div class="space-y-3">
+						<div class="space-y-4">
 							<div v-for="(item, index) in receipt.items" :key="index"
-								class="flex gap-2 items-start group">
-								<div class="flex-grow space-y-2">
-									<input v-model="item.description" type="text" placeholder="Description"
-										class="input input-bordered input-xs w-full rounded-none" />
-								</div>
-								<div class="w-16">
-									<input v-model.number="item.qty" type="number" placeholder="Qty"
-										class="input input-bordered input-xs w-full text-center rounded-none" />
-								</div>
-								<div class="w-24">
-									<input v-model.number="item.price" type="number" placeholder="Price"
-										class="input input-bordered input-xs w-full text-right rounded-none" />
-								</div>
+								class="p-4 bg-base-100/20 border border-white/5 relative space-y-4 group">
 								<button @click="removeItem(index)"
-									class="btn btn-ghost btn-xs text-error px-1 rounded-none">
+									class="btn btn-ghost btn-xs text-error absolute top-2 right-2 rounded-none opacity-50 hover:opacity-100 transition-opacity">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
 										viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 											d="M6 18L18 6M6 6l12 12" />
 									</svg>
 								</button>
+
+								<div>
+									<label
+										class="label label-text p-0 mb-1.5 text-[10px] uppercase tracking-widest opacity-40">Item
+										Description</label>
+									<textarea v-model="item.description" placeholder="Enter item description..."
+										class="textarea textarea-bordered textarea-sm w-full rounded-none min-h-[80px] leading-relaxed transition-all focus:border-amber-400" />
+								</div>
+
+								<div class="grid grid-cols-2 gap-4">
+									<div>
+										<label
+											class="label label-text p-0 mb-1.5 text-[10px] uppercase tracking-widest opacity-40">Quantity</label>
+										<input v-model.number="item.qty" type="number" placeholder="0"
+											class="input input-bordered input-sm w-full rounded-none transition-all focus:border-amber-400" />
+									</div>
+									<div>
+										<label
+											class="label label-text p-0 mb-1.5 text-[10px] uppercase tracking-widest opacity-40">Price</label>
+										<input v-model.number="item.price" type="number" placeholder="0.00"
+											class="input input-bordered input-sm w-full text-right rounded-none transition-all focus:border-amber-400" />
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -151,7 +162,17 @@
 									class="input input-bordered input-xs w-20 text-right rounded-none" />
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-sm">Discount</span>
+								<div class="flex items-center gap-2">
+									<span class="text-sm">Discount</span>
+									<div class="join border border-white/20">
+										<button @click="receipt.discountType = 'fixed'"
+											class="join-item btn btn-xs px-2"
+											:class="receipt.discountType !== 'percentage' ? 'bg-amber-400 text-black border-amber-400' : 'btn-ghost'">Val</button>
+										<button @click="receipt.discountType = 'percentage'"
+											class="join-item btn btn-xs px-2"
+											:class="receipt.discountType === 'percentage' ? 'bg-amber-400 text-black border-amber-400' : 'btn-ghost'">%</button>
+									</div>
+								</div>
 								<input v-model.number="receipt.discount" type="number"
 									class="input input-bordered input-xs w-24 text-right rounded-none" />
 							</div>
@@ -310,8 +331,9 @@
 										<span>{{ formatCurrency(taxAmount, receipt.currency) }}</span>
 									</div>
 									<div class="flex justify-between text-slate-500" v-if="receipt.discount > 0">
-										<span>Discount</span>
-										<span class="text-red-500">- {{ formatCurrency(receipt.discount,
+										<span>Discount {{ receipt.discountType === 'percentage' ? '(' + receipt.discount
+											+ '%)' : '' }}</span>
+										<span class="text-red-500">- {{ formatCurrency(calculatedDiscount,
 											receipt.currency)
 										}}</span>
 									</div>
@@ -597,9 +619,11 @@
 										</div>
 										<div class="flex justify-between text-slate-500"
 											v-if="selectedReceipt.discount > 0">
-											<span>Discount</span>
-											<span class="text-red-500">- {{ formatCurrency(selectedReceipt.discount,
-												selectedReceipt.currency)
+											<span>Discount {{ selectedReceipt.discountType === 'percentage' ? '(' +
+												selectedReceipt.discount + '%)' : '' }}</span>
+											<span class="text-red-500">- {{
+												formatCurrency(calculateDiscountAmount(selectedReceipt),
+													selectedReceipt.currency)
 											}}</span>
 										</div>
 										<div
@@ -834,6 +858,7 @@ const createDefaultReceipt = () => {
 		],
 		taxRate: 0,
 		discount: 0,
+		discountType: 'fixed',
 		currency: 'GHS',
 		logo: 'logob.png',
 	};
@@ -935,8 +960,15 @@ const taxAmount = computed(() => {
 	return subtotal.value * (receipt.taxRate / 100);
 });
 
+const calculatedDiscount = computed(() => {
+	if (receipt.discountType === 'percentage') {
+		return subtotal.value * (receipt.discount / 100);
+	}
+	return receipt.discount;
+});
+
 const total = computed(() => {
-	return subtotal.value + taxAmount.value - receipt.discount;
+	return subtotal.value + taxAmount.value - calculatedDiscount.value;
 });
 
 const formattedDate = computed(() => {
@@ -957,10 +989,18 @@ const calculateTax = (r: any) => {
 	return calculateSubtotal(r) * (r.taxRate / 100);
 };
 
+const calculateDiscountAmount = (r: any) => {
+	if (r.discountType === 'percentage') {
+		return calculateSubtotal(r) * (r.discount / 100);
+	}
+	return r.discount || 0;
+};
+
 const calculateTotal = (r: any) => {
 	const sub = calculateSubtotal(r);
 	const tax = calculateTax(r);
-	return sub + tax - r.discount;
+	const discount = calculateDiscountAmount(r);
+	return sub + tax - discount;
 };
 
 const formatCurrency = (value: number, currency = 'GHS') => {
@@ -1151,6 +1191,18 @@ const handleCardMouseMove = (e: MouseEvent) => {
 	position: relative;
 	z-index: 2;
 	/* Ensure content is above the shine */
+}
+
+/* Remove arrows/spinners from number inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type=number] {
+	-moz-appearance: textfield;
+	appearance: textfield;
 }
 </style>
 

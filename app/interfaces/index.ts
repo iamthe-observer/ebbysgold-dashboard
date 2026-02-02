@@ -38,6 +38,7 @@ export interface Receipt {
   }>
   taxRate: number
   discount: number
+  discountType?: 'fixed' | 'percentage'
   currency: string
   logo?: string
 }
