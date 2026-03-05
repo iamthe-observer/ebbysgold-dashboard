@@ -363,6 +363,7 @@
 
 							<!-- Footer -->
 							<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+								<p class="mb-1">All payments are non-refundable unless otherwise stated in writing.</p>
 								<p>Thank you for your business!</p>
 								<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.
 								</p>
@@ -655,6 +656,7 @@
 
 						<!-- Footer -->
 						<div class="text-center text-sm text-slate-400 mt-auto pt-12 border-t border-slate-100">
+							<p class="mb-1">All payments are non-refundable unless otherwise stated in writing.</p>
 							<p>Thank you for your business!</p>
 							<p class="mt-1 text-xs">If you have any questions about this receipt, please contact us.
 							</p>
